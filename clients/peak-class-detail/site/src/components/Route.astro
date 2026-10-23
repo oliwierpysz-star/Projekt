@@ -1,83 +1,98 @@
 ---
+// Scene inside the hero's pinned stage: slides in from the right, then a light travels the route
+// and unlocks each step; the call to action waits at the end of the road.
 const stops = [
   { t: 'Dzwonisz', d: 'Mówisz, co to za auto i czego potrzebuje. Wycena jest darmowa.' },
-  { t: 'Oddajesz kluczyki', d: 'Odbieramy auto spod Twojego domu albo pracy.' },
-  { t: 'Odbierasz lśniące', d: 'Oddajemy je w to samo miejsce. Ty nigdzie nie jedziesz.' },
+  { t: 'Odbieramy auto', d: 'Przyjeżdżamy po kluczyki pod Twój dom albo pracę.' },
+  { t: 'Robimy swoje', d: 'Detailing w pełnym zakresie, bez Twojego udziału.' },
+  { t: 'Oddajemy lśniące', d: 'W to samo miejsce, o umówionej porze.' },
 ];
+const wa = `https://wa.me/48881265265?text=${encodeURIComponent('Dzień dobry, proszę o wycenę detailingu.')}`;
 ---
-<section class="route" id="jak">
-  <div class="wrap route__grid">
+<div class="route" data-route>
+  <div class="route__in wrap">
     <div class="route__head">
-      <h2 class="display h2 rise">
-        <span class="ln"><span>Ty nigdzie</span></span>
-        <span class="ln"><span>nie <em>jedziesz.</em></span></span>
-      </h2>
-      <p class="lead rise-fade">Detailing door to door na terenie całego Śląska i Małopolski. Cała robota dzieje się po naszej stronie.</p>
+      <h2 class="display h2" id="route-title">Ty nigdzie<br />nie <em>jedziesz.</em></h2>
+      <p class="lead">Detailing door to door na terenie całego Śląska i Małopolski. Cała robota dzieje się po naszej stronie.</p>
     </div>
 
-    <ol class="route__map" data-route>
-      <svg class="route__line" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
-        <path class="route__base" d="M20 60 C 220 0, 330 120, 500 60 S 800 0, 980 60" />
-        <path class="route__draw" d="M20 60 C 220 0, 330 120, 500 60 S 800 0, 980 60" pathLength="1" data-route-path />
+    <div class="route__map">
+      <svg class="route__svg" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-hidden="true">
+        <path class="route__base" d="M10 120 C 170 40, 270 170, 400 110 S 650 40, 770 105 S 920 160, 990 90" data-route-path />
       </svg>
-      <svg class="route__line route__line--v" viewBox="0 0 120 1000" preserveAspectRatio="none" aria-hidden="true">
-        <path class="route__base" d="M60 0 L60 1000" />
-        <path class="route__draw" d="M60 0 L60 1000" pathLength="1" data-route-path-v />
+      <svg class="route__svg route__svg--draw" viewBox="0 0 1000 200" preserveAspectRatio="none" aria-hidden="true" data-route-draw>
+        <path class="route__draw" d="M10 120 C 170 40, 270 170, 400 110 S 650 40, 770 105 S 920 160, 990 90" />
       </svg>
-      {stops.map((s) => (
-        <li class="route__stop" data-stop>
-          <span class="route__pin" aria-hidden="true"></span>
-          <h3>{s.t}</h3>
-          <p>{s.d}</p>
-        </li>
-      ))}
-    </ol>
+      <span class="route__light" aria-hidden="true" data-route-light></span>
+      <ol class="route__stops">
+        {stops.map((s, i) => (
+          <li class="route__stop" data-stop data-t={[0.02, 0.35, 0.66, 0.98][i]}>
+            <span class="route__pin" aria-hidden="true"></span>
+            <div class="route__text">
+              <h3>{s.t}</h3>
+              <p>{s.d}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
 
-    <dl class="route__stats">
-      <div><dt class="display"><span data-count="1000">1000</span>+</dt><dd>aut przeszło przez nasze ręce</dd></div>
-      <div><dt class="display"><span data-count="50">50</span> tys.</dt><dd>osób śledzi naszą pracę na Instagramie</dd></div>
-    </dl>
+    <div class="route__cta" data-route-cta>
+      <p class="route__ask">Gotowe? Zacznij od darmowej wyceny.</p>
+      <div class="route__acts">
+        <a class="route__tel phone" href="tel:+48881265265">881 265 265</a>
+        <a class="act act--accent" href={wa} target="_blank" rel="noopener">Napisz na WhatsApp <span class="arr" aria-hidden="true">→</span></a>
+      </div>
+    </div>
   </div>
-</section>
+</div>
 
 <style>
-  .route { padding: clamp(6.875rem, 16vh, 12.5rem) 0 clamp(5.625rem, 12vh, 10rem); background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%); }
-  .route__grid { display: grid; gap: clamp(3rem, 7vh, 5.625rem); }
+  .route {
+    position: absolute; inset: 0; z-index: 5;
+    background:
+      radial-gradient(70% 60% at 85% 20%, rgba(91, 140, 255, 0.08), transparent 70%),
+      linear-gradient(180deg, var(--bg-2), var(--bg));
+    transform: translateX(100%);
+    box-shadow: -40px 0 80px rgba(0, 0, 0, 0.6);
+  }
+  .route__in { height: 100%; display: grid; grid-template-rows: auto 1fr auto; padding-top: clamp(5.5rem, 13vh, 9rem); padding-bottom: clamp(2rem, 7vh, 5rem); }
   .route__head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2rem; align-items: end; }
-  .route__map { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; padding-top: 130px; }
-  .route__line { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 120px; overflow: visible; }
-  .route__line--v { display: none; }
-  .route__line path { fill: none; vector-effect: non-scaling-stroke; }
-  .route__base { stroke: var(--hair); stroke-width: 1; stroke-dasharray: 2 6; }
-  .route__draw { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 6px rgba(91, 140, 255, 0.7)); }
-  .route__stop { position: relative; }
-  .route__stop:nth-of-type(1) { padding-right: 2rem; }
-  .route__stop:nth-of-type(2) { text-align: center; }
-  .route__stop:nth-of-type(3) { text-align: right; padding-left: 2rem; }
-  .route__pin { position: absolute; top: -78px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); box-shadow: 0 0 0 6px rgba(91, 140, 255, 0.08); transition: background 0.4s, box-shadow 0.4s; }
-  .route__stop:nth-of-type(1) .route__pin { left: 12px; }
-  .route__stop:nth-of-type(2) .route__pin { left: calc(50% - 7px); }
-  .route__stop:nth-of-type(3) .route__pin { right: 12px; }
-  .route__stop.is-on .route__pin { background: var(--accent); box-shadow: 0 0 0 6px rgba(91, 140, 255, 0.18), 0 0 24px 4px rgba(91, 140, 255, 0.55); }
-  .route__stop h3 { font-stretch: 120%; font-weight: 800; text-transform: uppercase; font-size: clamp(1.1rem, 1.6vw, 1.5rem); letter-spacing: 0.01em; }
-  .route__stop p { margin-top: 0.5rem; color: var(--mute); font-size: 0.98rem; max-width: 30ch; }
-  .route__stop:nth-of-type(2) p { margin-inline: auto; }
-  .route__stop:nth-of-type(3) p { margin-left: auto; }
 
-  .route__stats { margin: 0; display: grid; grid-template-columns: repeat(2, auto); justify-content: start; gap: 1rem clamp(3rem, 8vw, 8rem); }
-  .route__stats dt { font-size: clamp(2.6rem, 6vw, 5.6rem); font-variant-numeric: tabular-nums; }
-  .route__stats dd { margin: 0.4rem 0 0; color: var(--mute); max-width: 24ch; }
+  .route__map { position: relative; margin: 2rem 0; min-height: 15rem; }
+  .route__svg { position: absolute; left: 0; right: 0; top: 50%; width: 100%; height: 34%; transform: translateY(-50%); overflow: visible; }
+  .route__svg path { fill: none; vector-effect: non-scaling-stroke; }
+  .route__base { stroke: rgba(233, 237, 243, 0.28); stroke-width: 1.5; stroke-dasharray: 3 8; }
+  .route__draw { stroke: var(--accent); stroke-width: 2.5; }
+  .route__svg--draw { clip-path: inset(-30px 100% -30px 0); }
+  .route__light {
+    position: absolute; left: 0; top: 0; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+    background: #fff; box-shadow: 0 0 0 5px rgba(91, 140, 255, 0.35), 0 0 30px 8px rgba(91, 140, 255, 0.6);
+    opacity: 0;
+  }
+  .route__stops { list-style: none; margin: 0; padding: 0; }
+  .route__stop { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+  .route__pin {
+    position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--dim);
+    transition: border-color 0.4s, background 0.4s, box-shadow 0.4s;
+  }
+  .route__stop.is-on .route__pin { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 0 7px rgba(91, 140, 255, 0.16); }
+  .route__text { position: absolute; width: 15rem; left: -1rem; top: 2.2rem; opacity: 0.18; transform: translateY(10px); transition: opacity 0.5s, transform 0.6s var(--ease); }
+  .route__stop:nth-child(even) .route__text { top: auto; bottom: 2.2rem; }
+  .route__stop:last-child .route__text { left: auto; right: -1rem; text-align: right; }
+  .route__stop.is-on .route__text { opacity: 1; transform: none; }
+  .route__text h3 { font-stretch: 120%; font-weight: 800; text-transform: uppercase; font-size: clamp(1.05rem, 1.4vw, 1.4rem); }
+  .route__text p { margin-top: 0.4rem; color: var(--mute); font-size: 0.95rem; }
 
-  @media (max-width: 760px) {
-    .route__head { grid-template-columns: 1fr; gap: 1rem; }
-    .route__map { grid-template-columns: 1fr; gap: 2.2rem; padding: 0 0 0 54px; }
-    .route__line { display: none; }
-    .route__line--v { display: block; left: 0; top: 10px; width: 32px; height: calc(100% - 10px); }
-    .route__stop, .route__stop:nth-of-type(n) { text-align: left; padding: 0; }
-    .route__stop p, .route__stop:nth-of-type(n) p { margin-left: 0; }
-    .route__pin, .route__stop:nth-of-type(n) .route__pin { top: 6px; left: -45px; right: auto; margin-left: 0; }
-    .route__stats { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .route__stats dt { font-size: 2.3rem; }
-    .route__stats dd { font-size: 0.88rem; }
+  .route__cta { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 1rem 2.5rem; opacity: 0; transform: translateY(16px); transition: opacity 0.6s, transform 0.7s var(--ease); }
+  .route__cta.is-on { opacity: 1; transform: none; }
+  .route__ask { color: var(--mute); font-size: clamp(1rem, 1.3vw, 1.2rem); }
+  .route__acts { display: flex; flex-wrap: wrap; align-items: baseline; gap: 1rem 2.4rem; }
+  .route__tel { font-size: clamp(1.8rem, 3.2vw, 3rem); font-stretch: 118%; font-weight: 750; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .route { position: relative; transform: none; box-shadow: none; }
+    .route__text, .route__cta { opacity: 1; transform: none; }
   }
 </style>

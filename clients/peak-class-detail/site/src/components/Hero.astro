@@ -1,6 +1,11 @@
 ---
+import Route from './Route.astro';
+import { existsSync, readdirSync } from 'node:fs';
+// variants that have a car cut-out mask (title goes behind the car)
+const masks = readdirSync('public/hero').filter((v) => existsSync(`public/hero/${v}/mask-desktop.png`)).join(',');
 ---
-<section class="hero" id="top" data-hero>
+<section class="hero" id="top" data-hero data-masks={masks}>
+  <div class="hero__anchor" id="jak" aria-hidden="true"></div>
   <div class="hero__stage">
     <picture class="hero__still">
       <source media="(orientation: portrait)" srcset="/hero/a/clean-phone.webp" />
@@ -30,6 +35,7 @@
       </div>
     </div>
     <canvas class="hero__front" data-hero-front aria-hidden="true"></canvas>
+    <Route />
   </div>
   <div class="pick" hidden data-hero-pick>
     <span>Wersja hero</span>
@@ -42,7 +48,10 @@
   .pick[hidden] { display: none; }
   .pick a { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: var(--ink); font-weight: 700; }
   .pick a[aria-current='true'] { background: var(--accent); color: #fff; }
-  .hero { height: 340svh; }
+  .hero { position: relative; height: 720svh; }
+  /* nav target for "Jak to działa": the point where the route scene has slid in */
+  .hero__anchor { position: absolute; left: 0; top: calc((720svh - 100svh) * 0.5); }
+  .hero__scene { position: absolute; inset: 0; }
   .hero__stage { position: sticky; top: 0; height: 100svh; overflow: hidden; background: var(--bg); }
   .hero__still, .hero__still img, .hero__gl { position: absolute; inset: 0; width: 100%; height: 100%; }
   .hero__still img { object-fit: cover; }
@@ -55,8 +64,8 @@
   .hero--e .hero__copy { top: 13vh; bottom: 6vh; }
   .hero--e .hero__state--a, .hero--e .hero__state--b { position: absolute; inset: 0 var(--gutter); }
   .hero--e .hero__state--b { display: flex; flex-direction: column; }
-  .hero--e .hero__title { font-size: clamp(3rem, 12.4vw, 14rem); line-height: 0.86; }
-  .hero--e .hero__title .ln:last-child { padding-left: 0.5em; }
+  .hero--e .hero__title { font-size: clamp(3rem, 10.4vw, 12rem); line-height: 0.88; }
+  .hero--e .hero__title .ln:last-child { padding-left: 0.32em; }
   .hero--e .hero__lead { margin-top: auto; }
   .hero--e .hero__cue { position: absolute; left: 0; bottom: 0; }
   .hero--e .hero__shade {
@@ -100,6 +109,7 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .hero { height: auto; }
+    .hero__anchor { position: static; }
     .hero__stage { position: relative; }
     .hero__state--a { display: none; }
     :global(.js) .hero__state--b .ln > span, :global(.js) .hero__state--b .hero__lead, :global(.js) .hero__state--b .hero__acts { transform: none; opacity: 1; }

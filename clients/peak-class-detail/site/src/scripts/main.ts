@@ -72,7 +72,7 @@ addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) clo
 const hero = $('[data-hero]')!;
 const heroA = $('[data-hero-a]')!;
 const heroB = $('[data-hero-b]')!;
-const heroState = { wash: 0, foam: 0, rinse: 0 };
+const heroState = { wash: 0 };
 // Hero variants for the client to choose from: ?hero=a|b|c|d (the choice is remembered on this device)
 const params = new URLSearchParams(location.search);
 const VARIANTS = ['a', 'b', 'c', 'd', 'e'];
@@ -92,23 +92,58 @@ if (variant !== 'a') {
   $<HTMLImageElement>('img', pic)!.src = `/hero/${variant}/clean-desktop.webp`;
 }
 if (!reduced) {
+  // One pinned stage, several scenes. Fractions of the hero's scroll:
+  //   0.00-0.26 wash the car, titles swap      0.34-0.48 route scene slides in from the right
+  //   0.52-0.90 the light travels the route    0.90-1.00 CTA, hold
+  const c = gsap.utils.clamp(0, 1);
+  const route = $('[data-route]', hero)!;
+  const routePath = $<SVGPathElement>('[data-route-path]', route)!;
+  const routeLight = $('[data-route-light]', route)!;
+  const routeSvg = routePath.ownerSVGElement!;
+  const routeDraw = $<SVGSVGElement>('[data-route-draw]', route)!;
+  const stops = $$<HTMLElement>('[data-stop]', route);
+  const cta = $('[data-route-cta]', route)!;
+  const len = routePath.getTotalLength();
+  // place the stops on the curve (the svg stretches, so map viewBox units to pixels)
+  const placeStops = () => {
+    const b = routeSvg.getBoundingClientRect(), m = routeSvg.parentElement!.getBoundingClientRect();
+    const at = (t: number) => {
+      const pt = routePath.getPointAtLength(t * len);
+      return { x: b.left - m.left + (pt.x / 1000) * b.width, y: b.top - m.top + (pt.y / 200) * b.height };
+    };
+    stops.forEach((st) => { const p = at(Number(st.dataset.t)); st.style.left = `${p.x}px`; st.style.top = `${p.y}px`; });
+    return at;
+  };
+  let at = placeStops();
+  addEventListener('resize', () => { at = placeStops(); });
+
   ScrollTrigger.create({
     trigger: hero, start: 'top top', end: 'bottom bottom', scrub: true,
     onUpdate: (s) => {
-      const c = gsap.utils.clamp(0, 1);
-      heroState.wash = c(s.progress / 0.5);
-      heroState.foam = c((s.progress - 0.64) / 0.18);
-      heroState.rinse = c((s.progress - 0.82) / 0.16);
+      const p = s.progress;
+      heroState.wash = c(p / 0.26);
+      const r = c((p - 0.52) / 0.38);
+      const pt = at(r);
+      // the blue line is revealed up to the light (the route only moves rightwards)
+      const sb = routeSvg.getBoundingClientRect(), mb = routeSvg.parentElement!.getBoundingClientRect();
+      routeDraw.style.clipPath = `inset(-30px ${Math.max(0, 100 - ((pt.x - (sb.left - mb.left)) / sb.width) * 100)}% -30px 0)`;
+      routeLight.style.transform = `translate(${pt.x}px, ${pt.y}px)`;
+      routeLight.style.opacity = p > 0.5 && p < 0.995 ? '1' : '0';
+      stops.forEach((st) => st.classList.toggle('is-on', r >= Number(st.dataset.t) - 0.01));
+      cta.classList.toggle('is-on', r >= 0.98);
     },
   });
+  const media = $$('.hero__still, .hero__gl, .hero__front, .hero__shade, .hero__copy', hero);
   const tl = gsap.timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom bottom', scrub: 0.6 } });
-  tl.to($$('.ln > span', heroA), { yPercent: -110, stagger: 0.03, duration: 0.12, ease: 'none' }, 0.22)
-    .to($('[data-hero-cue]'), { opacity: 0, duration: 0.06 }, 0.03)
-    .to($$('.ln > span', heroB), { y: 0, stagger: 0.04, duration: 0.14, ease: 'none' }, 0.32)
-    .to($$('.hero__lead, .hero__acts', heroB), { opacity: 1, y: 0, stagger: 0.04, duration: 0.1 }, 0.44)
-    .to(heroB, { opacity: 0, y: -30, duration: 0.06, ease: 'none' }, 0.6)
-    .to($('.hero__shade', hero), { opacity: 0, duration: 0.1, ease: 'none' }, 0.64)
-    .to({}, { duration: 0.22 }, 0.78);
+  tl.to($$('.ln > span', heroA), { yPercent: -110, stagger: 0.02, duration: 0.06, ease: 'none' }, 0.1)
+    .to($('[data-hero-cue]'), { opacity: 0, duration: 0.03 }, 0.02)
+    .to($$('.ln > span', heroB), { y: 0, stagger: 0.02, duration: 0.07, ease: 'none' }, 0.15)
+    .to($$('.hero__lead, .hero__acts', heroB), { opacity: 1, y: 0, stagger: 0.02, duration: 0.05 }, 0.21)
+    // the next scene pulls in from the right and pushes the car away to the left
+    .to(route, { xPercent: -100, duration: 0.14, ease: 'power2.inOut' }, 0.34)
+    .to(media, { xPercent: -28, opacity: 0.35, duration: 0.14, ease: 'power2.inOut' }, 0.34)
+    .from($$('.route__head > *', route), { x: 80, opacity: 0, stagger: 0.02, duration: 0.1, ease: 'power2.out' }, 0.4)
+    .to({}, { duration: 0.01 }, 0.99);
   // intro: first title rises on load
   gsap.from($$('.ln > span', heroA), { yPercent: 110, stagger: 0.08, duration: 1.1, ease: 'expo.out', delay: 0.15 });
   initHeroGL($<HTMLCanvasElement>('[data-hero-gl]')!, () => heroState, variant, $<HTMLCanvasElement>('[data-hero-front]')!)
@@ -146,20 +181,6 @@ if (!reduced) {
     onEnter: (els) => els.forEach((el, i) => sweep(el as HTMLElement, i * 0.08)),
   });
 
-  /* Route: line draws with scroll, stops light up */
-  const route = $('[data-route]');
-  if (route) {
-    const paths = $$<SVGPathElement>('[data-route-path], [data-route-path-v]', route);
-    const stops = $$('[data-stop]', route);
-    gsap.to(paths, {
-      strokeDashoffset: 0, ease: 'none',
-      scrollTrigger: {
-        trigger: route, start: 'top 75%', end: 'bottom 55%', scrub: 0.5,
-        onUpdate: (s) => stops.forEach((st, i) => st.classList.toggle('is-on', s.progress >= i / (stops.length - 1) - 0.02)),
-      },
-    });
-  }
-
   /* Numbers roll */
   $$<HTMLElement>('[data-count]').forEach((el) => {
     const end = Number(el.dataset.count);
@@ -193,7 +214,7 @@ if (polish && !reduced) {
     trigger: polish, start: 'top top', end: 'bottom bottom', scrub: true,
     onUpdate: (s) => {
       pp = s.progress;
-      words.forEach((w, i) => w.classList.toggle('is-lit', pp > 0.12 + i * 0.3));
+      words.forEach((w, i) => w.classList.toggle("is-lit", pp > 0.1 + i * 0.35));
       before.style.opacity = String(pp < 0.86 ? 1 : 0);
       after.style.opacity = String(pp < 0.86 ? 0 : 1);
     },
@@ -245,7 +266,7 @@ if (track) {
   });
   track.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
 
-  const vids = $$<HTMLVideoElement>('video[data-src]', track);
+  const vids = $$<HTMLVideoElement>('video[data-src]');
   const vio = new IntersectionObserver((entries) => entries.forEach((e) => {
     const v = e.target as HTMLVideoElement;
     if (e.isIntersecting) {

@@ -1,11 +1,9 @@
-// "Rysy znikają": scroll drives a polishing pad over swirled black paint.
-// Behind the pad the corrected photo shows through; at the end the whole panel is corrected.
+// "Rysy znikają": scroll grows a circle of corrected paint out of the light spot.
 const VERT = `
 attribute vec2 p;
 varying vec2 vUv;
 void main(){ vUv = p * 0.5 + 0.5; gl_Position = vec4(p, 0.0, 1.0); }`;
 
-const N = 64; // samples along the pad's path
 const FRAG = `
 precision highp float;
 varying vec2 vUv;
@@ -13,24 +11,8 @@ uniform sampler2D tBefore;
 uniform sampler2D tAfter;
 uniform vec2 uCover;
 uniform float uAspect;   // canvas w / h
-uniform float uProg;     // 0..1 scroll progress of the polishing
-uniform float uTime;
-uniform vec2 uSpot;      // light spot in image uv (focus of the swirls)
-uniform float uR;        // pad radius (in height units)
-
-const int N = ${N};
-
-// path of the pad: a spiral outwards from the light spot, in screen space (x scaled by aspect)
-uniform float uAspectP;
-vec2 pathAt(float t, vec2 c){
-  float a = t * 6.2832 * 3.2;
-  float r = 0.05 + t * 0.62;
-  float sx = 1.25 * min(uAspectP, 1.0);
-  return c + vec2(cos(a) * r * sx, sin(a) * r * 0.75);
-}
-float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(h2(i), h2(i + vec2(1, 0)), f.x), mix(h2(i + vec2(0, 1)), h2(i + vec2(1, 1)), f.x), f.y); }
+uniform float uProg;     // 0..1 scroll progress
+uniform vec2 uSpot;      // light spot in image uv: the clean area grows from here
 
 void main(){
   vec2 uv = (vUv - 0.5) * uCover + 0.5;
@@ -38,51 +20,14 @@ void main(){
   vec3 before = texture2D(tBefore, uv).rgb;
   vec3 after = texture2D(tAfter, uv).rgb;
 
-  // screen position of the spot
-  vec2 spotScreen = (vec2(uSpot.x, 1.0 - uSpot.y) - 0.5) / uCover + 0.5;
-  vec2 P = vec2(vUv.x * uAspect, vUv.y);
-  vec2 C = vec2(spotScreen.x * uAspect, spotScreen.y);
-
-  // how much of the path has been travelled
-  float head = clamp(uProg / 0.85, 0.0, 1.0);
-  float clean = 0.0;
-  for (int i = 0; i < N; i++) {
-    float t = float(i) / float(N - 1);
-    if (t > head) break;
-    float d = length(P - pathAt(t, C));
-    clean = max(clean, smoothstep(uR * 1.05, uR * 0.55, d));
-  }
-  // the rest of the panel finishes in the last part of the scroll
-  clean = max(clean, smoothstep(0.85, 1.0, uProg));
+  vec2 spot = (vec2(uSpot.x, 1.0 - uSpot.y) - 0.5) / uCover + 0.5;
+  float d = length((vUv - spot) * vec2(uAspect, 1.0));
+  // a soft-edged circle of corrected paint grows from the light until it fills the frame
+  float rad = pow(clamp(uProg / 0.9, 0.0, 1.0), 1.4) * (max(uAspect, 1.0) * 1.3);
+  float clean = smoothstep(rad + 0.06, rad - 0.06, d);
   vec3 col = mix(before, after, clean);
-
-  // the pad itself: a spinning foam disc with a soft shadow, only while polishing
-  float on = smoothstep(0.0, 0.03, uProg) * (1.0 - smoothstep(0.84, 0.9, uProg));
-  vec2 H = pathAt(head, C);
-  vec2 d = P - H;
-  float r = length(d);
-  // spinning blue foam pad on a dark backing plate
-  float sp = uTime * 22.0;
-  vec2 rd = mat2(cos(sp), -sin(sp), sin(sp), cos(sp)) * d;
-  float foamTex = vn(rd / uR * 9.0) * 0.6 + vn(rd / uR * 26.0) * 0.4;
-  float disc = smoothstep(uR, uR * 0.95, r);
-  vec3 pad = vec3(0.16, 0.30, 0.78) * (0.65 + 0.55 * foamTex);
-  pad *= 1.0 - 0.45 * smoothstep(uR * 0.6, uR, r);                    // rounded foam edge
-  pad += vec3(0.35, 0.45, 0.7) * smoothstep(uR * 0.9, 0.0, length(d + vec2(uR * 0.35, -uR * 0.35))) * 0.35; // top-left sheen
-  // seen from above: a big black backing plate, the blue foam only as a ring around it
-  float plate = smoothstep(uR * 0.8, uR * 0.77, r);
-  vec3 plateCol = vec3(0.055, 0.06, 0.07) + 0.04 * vn(rd / uR * 30.0);
-  plateCol += vec3(0.08) * smoothstep(uR * 0.8, uR * 0.5, r) * smoothstep(uR * 0.3, uR * 0.6, r) * (0.5 + 0.5 * sin(atan(rd.y, rd.x) * 24.0)); // spun grooves
-  // a white index mark smeared into an arc by the spin
-  float ang = atan(d.y, d.x) - mod(sp, 6.2832);
-  float arc = smoothstep(1.4, 0.0, mod(ang, 6.2832)) * smoothstep(uR * 0.06, 0.0, abs(r - uR * 0.6));
-  plateCol += vec3(0.55) * arc;
-  pad = mix(pad, plateCol, plate);
-  pad = mix(pad, vec3(0.32), smoothstep(uR * 0.1, uR * 0.08, r));  // centre nut
-  float shadow = smoothstep(uR * 1.35, uR * 0.8, length(d - vec2(uR * 0.12, -uR * 0.18)));
-  col *= 1.0 - shadow * 0.6 * on;
-  col = mix(col, pad, disc * on);
-
+  // a faint cool sheen travels along the edge of the circle
+  col += vec3(0.55, 0.65, 0.9) * exp(-abs(d - rad) * 60.0) * 0.12 * step(0.01, uProg) * (1.0 - step(0.9, uProg));
   gl_FragColor = vec4(col, 1.0);
 }`;
 
@@ -135,7 +80,7 @@ export async function initPolishGL(canvas: HTMLCanvasElement, getProgress: () =>
   gl.uniform1i(U('tAfter'), 1);
   // light spot of the swirl photo: on the phone crop it sits in the middle
   gl.uniform2f(U('uSpot'), set === 'phone' ? 0.5 : 0.45, 0.44);
-  const uCover = U('uCover'), uAspect = U('uAspect'), uProg = U('uProg'), uTime = U('uTime'), uR = U('uR');
+  const uCover = U('uCover'), uAspect = U('uAspect'), uProg = U('uProg');
   const imgAspect = before.width / before.height;
 
   const resize = () => {
@@ -147,19 +92,15 @@ export async function initPolishGL(canvas: HTMLCanvasElement, getProgress: () =>
     const a = w / h;
     gl.uniform2f(uCover, a > imgAspect ? 1 : a / imgAspect, a > imgAspect ? imgAspect / a : 1);
     gl.uniform1f(uAspect, a);
-    gl.uniform1f(gl.getUniformLocation(prog, 'uAspectP'), a);
-    gl.uniform1f(uR, a < 1 ? 0.11 : 0.15);
   };
   resize();
   new ResizeObserver(resize).observe(canvas);
 
   let raf = 0, visible = false;
-  const t0 = performance.now();
   const frame = () => {
     raf = 0;
     if (!visible) return;
     gl.uniform1f(uProg, getProgress());
-    gl.uniform1f(uTime, (performance.now() - t0) / 1000);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     raf = requestAnimationFrame(frame);
   };
