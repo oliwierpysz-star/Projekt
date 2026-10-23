@@ -75,7 +75,7 @@ const heroB = $('[data-hero-b]')!;
 const heroState = { wash: 0, foam: 0, rinse: 0 };
 // Hero variants for the client to choose from: ?hero=a|b|c|d (the choice is remembered on this device)
 const params = new URLSearchParams(location.search);
-const VARIANTS = ['a', 'b', 'c', 'd'];
+const VARIANTS = ['a', 'b', 'c', 'd', 'e'];
 let variant = 'a';
 try { variant = params.get('hero') || sessionStorage.getItem('hero') || 'a'; } catch { variant = params.get('hero') || 'a'; }
 if (!VARIANTS.includes(variant)) variant = 'a';
@@ -85,6 +85,7 @@ if (params.has('hero')) {
   pick.hidden = false;
   $$('a', pick).forEach((a) => a.setAttribute('aria-current', String(a.getAttribute('href') === `?hero=${variant}`)));
 }
+hero.classList.add(`hero--${variant}`);
 if (variant !== 'a') {
   const pic = $('.hero__still')!;
   $<HTMLSourceElement>('source', pic)!.srcset = `/hero/${variant}/clean-phone.webp`;
@@ -110,7 +111,7 @@ if (!reduced) {
     .to({}, { duration: 0.22 }, 0.78);
   // intro: first title rises on load
   gsap.from($$('.ln > span', heroA), { yPercent: 110, stagger: 0.08, duration: 1.1, ease: 'expo.out', delay: 0.15 });
-  initHeroGL($<HTMLCanvasElement>('[data-hero-gl]')!, () => heroState, variant)
+  initHeroGL($<HTMLCanvasElement>('[data-hero-gl]')!, () => heroState, variant, $<HTMLCanvasElement>('[data-hero-front]')!)
     .then((ok) => { if (ok) hero.classList.add('is-gl'); })
     .catch(() => {});
 }

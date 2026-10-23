@@ -29,10 +29,11 @@
         </div>
       </div>
     </div>
+    <canvas class="hero__front" data-hero-front aria-hidden="true"></canvas>
   </div>
   <div class="pick" hidden data-hero-pick>
     <span>Wersja hero</span>
-    <a href="?hero=a">A</a><a href="?hero=b">B</a><a href="?hero=c">C</a><a href="?hero=d">D</a>
+    <a href="?hero=a">A</a><a href="?hero=b">B</a><a href="?hero=c">C</a><a href="?hero=d">D</a><a href="?hero=e">E</a>
   </div>
 </section>
 
@@ -46,6 +47,23 @@
   .hero__still, .hero__still img, .hero__gl { position: absolute; inset: 0; width: 100%; height: 100%; }
   .hero__still img { object-fit: cover; }
   .hero__gl { opacity: 0; transition: opacity 0.6s; }
+  /* car cut-out layer: drawn above the title so the car stands in front of the letters */
+  .hero__front { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+  .hero.has-front .hero__front { display: block; }
+
+  /* variant E: title set big across the top, car in front of it; lead and actions at the bottom */
+  .hero--e .hero__copy { top: 13vh; bottom: 6vh; }
+  .hero--e .hero__state--a, .hero--e .hero__state--b { position: absolute; inset: 0 var(--gutter); }
+  .hero--e .hero__state--b { display: flex; flex-direction: column; }
+  .hero--e .hero__title { font-size: clamp(3rem, 12.4vw, 14rem); line-height: 0.86; }
+  .hero--e .hero__title .ln:last-child { padding-left: 0.5em; }
+  .hero--e .hero__lead { margin-top: auto; }
+  .hero--e .hero__cue { position: absolute; left: 0; bottom: 0; }
+  .hero--e .hero__shade {
+    background:
+      linear-gradient(180deg, rgba(6, 8, 11, 0.7) 0%, rgba(6, 8, 11, 0.25) 40%, transparent 60%),
+      linear-gradient(0deg, var(--bg) 0%, rgba(6, 8, 11, 0.5) 16%, transparent 34%);
+  }
   .hero.is-gl .hero__gl { opacity: 1; }
   .hero__shade {
     position: absolute; inset: 0; pointer-events: none;

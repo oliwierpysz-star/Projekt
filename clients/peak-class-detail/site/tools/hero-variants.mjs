@@ -10,12 +10,19 @@ const variants = [
   { id: 'b', src: '09', fx: 0.64, shift: [5, 0] },
   { id: 'c', src: 'aventador', fx: 0.645, shift: [5, 0] },
   { id: 'd', src: '12', fx: 0.54, shift: [5, -5] },
+  { id: 'e', src: 'se', fx: 0.5, shift: [0, -5], scale: 0.995 },
 ];
 
 // move the dirty image back onto the clean one, filling the edge with copied pixels
-async function aligned(src, [dx, dy]) {
+async function aligned(src, [dx, dy], scale = 1) {
   const P = 32;
   const { width, height } = await sharp(src).metadata();
+  if (scale !== 1) {
+    // dirty edit came out slightly smaller/larger: rescale around the centre first
+    const W = Math.round(width / scale), H = Math.round(height / scale);
+    const big = await sharp(src).resize(W, H).toBuffer();
+    src = await sharp(big).extract({ left: Math.round((W - width) / 2), top: Math.round((H - height) / 2), width, height }).jpeg({ quality: 95 }).toBuffer();
+  }
   const buf = await sharp(src).extend({ top: P, bottom: P, left: P, right: P, extendWith: 'copy' }).toBuffer();
   return sharp(buf).extract({ left: P + dx, top: P + dy, width, height }).jpeg({ quality: 95 }).toBuffer();
 }
@@ -43,7 +50,7 @@ for (const v of variants) {
   for (const kind of ['clean', 'dirty']) {
     const file = `../source/hero/${kind}-${v.src}.jpg`;
     if (!existsSync(file)) continue;
-    const src = kind === 'dirty' ? await patched(await aligned(file, v.shift), `../source/hero/clean-${v.src}.jpg`, v.patch) : file;
+    const src = kind === 'dirty' ? await patched(await aligned(file, v.shift, v.scale), `../source/hero/clean-${v.src}.jpg`, v.patch) : file;
     const img = sharp(src);
     const { width, height } = await img.metadata();
     await sharp(src).resize(2560).webp({ quality: 74 }).toFile(`${dir}/${kind}-desktop.webp`);
@@ -57,5 +64,10 @@ for (const v of variants) {
       await sharp(src).extract({ left, top: 0, width: w, height }).resize(1080, 1920).webp({ quality: 74 }).toFile(`${dir}/${kind}-phone.webp`);
     }
     console.log(v.id, kind, 'ok');
+  }
+  const cut = `../source/hero/cutout-${v.src}.png`;
+  if (existsSync(cut)) {
+    await sharp(cut).resize(2560, 1440, { fit: 'fill' }).ensureAlpha().png().toFile(`${dir}/mask-desktop.png`); // only its alpha is used
+    console.log(v.id, 'mask ok');
   }
 }

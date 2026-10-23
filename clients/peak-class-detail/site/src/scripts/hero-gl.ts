@@ -130,13 +130,18 @@ function loadImage(src: string) {
   });
 }
 
-export async function initHeroGL(canvas: HTMLCanvasElement, getState: () => { wash: number; foam: number; rinse: number }, variant: string) {
-  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' });
+export async function initHeroGL(canvas: HTMLCanvasElement, getState: () => { wash: number; foam: number; rinse: number }, variant: string, front?: HTMLCanvasElement) {
+  // preserveDrawingBuffer lets the cut-out layer copy this frame after it is drawn
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: !!front });
   if (!gl) return null;
   const portrait = matchMedia('(orientation: portrait)').matches;
   const set = portrait ? 'phone' : 'desktop';
   const clean = await loadImage(`/hero/${variant}/clean-${set}.webp`);
   const dirty = await loadImage(`/hero/${variant}/dirty-${set}.webp`).catch(() => null);
+  // optional cut-out mask: the car is redrawn above the title
+  const mask = front && set === 'desktop' ? await loadImage(`/hero/${variant}/mask-desktop.png`).catch(() => null) : null;
+  const fctx = mask ? front!.getContext('2d') : null;
+  if (fctx) front!.closest('.hero')?.classList.add('has-front');
 
   const prog = gl.createProgram()!;
   gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
@@ -185,6 +190,7 @@ export async function initHeroGL(canvas: HTMLCanvasElement, getState: () => { wa
     // cover: scale uv so the image fills the canvas
     gl.uniform2f(uCover, a > imgAspect ? 1 : a / imgAspect, a > imgAspect ? imgAspect / a : 1);
     gl.uniform1f(uAspect, a);
+    if (fctx) { front!.width = canvas.width; front!.height = canvas.height; }
   };
   resize();
   addEventListener('resize', resize);
@@ -201,6 +207,16 @@ export async function initHeroGL(canvas: HTMLCanvasElement, getState: () => { wa
     gl.uniform1f(uRinse, st.rinse);
     gl.uniform1f(uTime, (performance.now() - t0) / 1000);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    if (fctx && mask) {
+      const W = front!.width, H = front!.height, a = W / H;
+      // same cover crop as the shader, applied to the mask
+      const sw = a > imgAspect ? mask.width : mask.height * a;
+      const sh = a > imgAspect ? mask.width / a : mask.height;
+      fctx.globalCompositeOperation = 'copy';
+      fctx.drawImage(canvas, 0, 0);
+      fctx.globalCompositeOperation = 'destination-in';
+      fctx.drawImage(mask, (mask.width - sw) / 2, (mask.height - sh) / 2, sw, sh, 0, 0, W, H);
+    }
     raf = requestAnimationFrame(frame);
   };
   new IntersectionObserver(([e]) => {
