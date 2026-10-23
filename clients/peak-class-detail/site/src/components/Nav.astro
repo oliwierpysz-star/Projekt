@@ -1,0 +1,71 @@
+---
+const links = [
+  { href: '#jak', label: 'Jak to działa' },
+  { href: '#uslugi', label: 'Usługi i ceny' },
+  { href: '#realizacje', label: 'Realizacje' },
+  { href: '#ebook', label: 'E-book' },
+  { href: '#wycena', label: 'Wycena' },
+];
+---
+<header class="nav" data-nav>
+  <div class="nav__in">
+    <a class="nav__mark" href="#top" aria-label="Peak Class Detail, początek strony">
+      <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 9h28L20 33z" /></svg>
+      <span>Peak Class</span>
+    </a>
+    <nav class="nav__links" aria-label="Główna">
+      {links.map((l) => <a href={l.href} data-navlink>{l.label}</a>)}
+    </nav>
+    <a class="nav__tel phone" href="tel:+48881265265">881 265 265</a>
+    <button class="nav__menu" type="button" aria-expanded="false" aria-controls="menu" data-menu-btn>Menu</button>
+  </div>
+  <div class="menu" id="menu" hidden data-menu>
+    <nav aria-label="Menu">
+      {links.map((l) => <a class="display" href={l.href} data-navlink>{l.label}</a>)}
+    </nav>
+    <a class="menu__tel phone" href="tel:+48881265265">881 265 265</a>
+    <p class="caption">Śląsk i Małopolska · door to door</p>
+  </div>
+</header>
+
+<style>
+  .nav { position: fixed; inset: 0 0 auto; z-index: 50; }
+  .nav__in {
+    display: flex; align-items: center; gap: 2rem;
+    padding: 18px var(--gutter);
+    background: linear-gradient(180deg, rgba(6, 8, 11, 0.82), rgba(6, 8, 11, 0));
+    transition: transform 0.5s var(--ease);
+  }
+  .nav.is-hidden .nav__in { transform: translateY(-110%); }
+  .nav__mark { display: inline-flex; align-items: center; gap: 0.6rem; font-stretch: 125%; font-weight: 850; text-transform: uppercase; letter-spacing: 0.02em; font-size: 0.95rem; }
+  .nav__mark svg { width: 22px; height: 22px; fill: none; stroke: var(--accent); stroke-width: 3.4; stroke-linejoin: round; }
+  .nav__links { display: flex; gap: 1.6rem; margin: 0 auto; font-size: 0.88rem; color: var(--mute); }
+  .nav__links a { position: relative; transition: color 0.3s; }
+  .nav__links a:hover, .nav__links a[aria-current='true'] { color: var(--ink); }
+  .nav__links a[aria-current='true']::after { content: ''; position: absolute; left: 0; right: 0; bottom: -6px; height: 1px; background: var(--accent); }
+  .nav__tel { font-size: 0.95rem; }
+  .nav__menu { display: none; font-weight: 600; font-stretch: 110%; font-size: 0.95rem; padding: 10px 0 10px 12px; }
+
+  .menu {
+    position: fixed; inset: 0; z-index: -1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.2rem;
+    background: radial-gradient(120% 80% at 50% 0%, var(--bg-3), var(--bg) 70%);
+    text-align: center;
+  }
+  .menu[hidden] { display: none; }
+  .menu nav { display: flex; flex-direction: column; gap: 1.1rem; }
+  .menu nav a { font-size: clamp(1.7rem, 8vw, 2.3rem); color: var(--mute); }
+  .menu nav a[aria-current='true'] { color: var(--ink); }
+  .menu nav a[aria-current='true']::before { content: ''; display: inline-block; width: 0.45em; height: 0.45em; margin-right: 0.4em; vertical-align: 0.18em; background: var(--accent); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  .menu__tel { font-size: 1.25rem; }
+
+  @media (max-width: 980px) {
+    .nav__links { display: none; }
+    .nav__tel { margin-left: auto; }
+  }
+  @media (max-width: 760px) {
+    .nav__in { gap: 1rem; padding: 14px var(--gutter); }
+    .nav__tel { display: none; }
+    .nav__menu { display: block; margin-left: auto; }
+  }
+</style>

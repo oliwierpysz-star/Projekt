@@ -1,0 +1,61 @@
+---
+const services = [
+  { name: 'Pielęgnacja wnętrza', price: 450, d: 'Odkurzanie, pranie tapicerki, czyszczenie i zabezpieczenie skór, plastików i szyb.' },
+  { name: 'Detailing zewnętrzny', price: 450, d: 'Dokładne mycie, dekontaminacja lakieru, felgi i opony, zabezpieczenie woskiem.' },
+  { name: 'Full detail', price: 800, d: 'Detailing zewnętrzny i pielęgnacja wnętrza w jednym pakiecie.' },
+  { name: 'Korekta lakieru', price: 1000, d: 'Maszynowe polerowanie, które usuwa rysy i hologramy i przywraca głębię koloru.' },
+  { name: 'Powłoka ceramiczna', price: 2000, d: 'Twarda, długotrwała ochrona lakieru z głębokim połyskiem.' },
+];
+---
+<section class="svc" id="uslugi">
+  <div class="wrap">
+    <div class="svc__head">
+      <h2 class="display h2 rise">
+        <span class="ln"><span>Usługi</span></span>
+        <span class="ln"><span>i <em>ceny.</em></span></span>
+      </h2>
+      <p class="lead rise-fade">Ceny są orientacyjne. Ostateczna wycena zależy od wielkości auta, stopnia zabrudzenia i zakresu prac.</p>
+    </div>
+
+    <ul class="svc__list">
+      {services.map((s) => (
+        <li class="svc__row sweep">
+          <h3 class="svc__name">{s.name}</h3>
+          <p class="svc__d">{s.d}</p>
+          <p class="svc__price"><span>od</span> <b>{s.price.toLocaleString('pl-PL')}</b> zł</p>
+        </li>
+      ))}
+    </ul>
+
+    <div class="svc__foot">
+      <a class="act act--accent" href="#wycena">Darmowa wycena dla Twojego auta <span class="arr" aria-hidden="true">→</span></a>
+      <p class="caption">Bon podarunkowy na każdą usługę, <a class="phone" href="#prezent">zobacz niżej</a></p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .svc { padding: clamp(5.625rem, 14vh, 10.625rem) 0; background: linear-gradient(180deg, var(--bg-2), var(--bg-3) 50%, var(--bg-2)); }
+  .svc__head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2rem; align-items: end; margin-bottom: clamp(2.5rem, 6vh, 4.5rem); }
+  .svc__list { list-style: none; margin: 0; padding: 0; }
+  .svc__row {
+    display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto; gap: 1rem 2.5rem; align-items: baseline;
+    padding: clamp(1.125rem, 2.6vh, 1.75rem) 0;
+    border-top: 1px solid var(--hair);
+  }
+  .svc__row:last-child { border-bottom: 1px solid var(--hair); }
+  .svc__name { font-stretch: 125%; font-weight: 820; text-transform: uppercase; font-size: clamp(1.25rem, 2.6vw, 2.5rem); line-height: 1; transition: color 0.3s; }
+  .svc__row:hover .svc__name { color: #fff; }
+  .svc__d { color: var(--mute); font-size: 0.98rem; max-width: 44ch; }
+  .svc__price { white-space: nowrap; font-stretch: 112%; color: var(--mute); }
+  .svc__price b { font-weight: 800; font-size: clamp(1.3rem, 2.2vw, 2rem); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .svc__row:hover .svc__price b { color: var(--accent); }
+  .svc__foot { margin-top: 2rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem; align-items: baseline; }
+  @media (max-width: 900px) {
+    .svc__head { grid-template-columns: 1fr; gap: 1rem; }
+    .svc__row { grid-template-columns: minmax(0, 1fr) auto; gap: 0.35rem 1rem; }
+    .svc__d { grid-column: 1 / -1; grid-row: 2; font-size: 0.9rem; }
+    .svc__name { font-size: 1.15rem; }
+    .svc__price b { font-size: 1.2rem; }
+  }
+</style>

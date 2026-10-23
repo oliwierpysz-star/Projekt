@@ -1,0 +1,33 @@
+---
+const year = new Date().getFullYear();
+---
+<footer class="foot">
+  <div class="wrap">
+    <p class="foot__mark display" aria-hidden="true" data-fit>Peak Class</p>
+    <div class="foot__row">
+      <p>Peak Class Detail · mobilny detailing door to door · Śląsk i Małopolska</p>
+      <nav class="foot__links" aria-label="Stopka">
+        <a class="phone" href="tel:+48881265265">881 265 265</a>
+        <a class="phone" href="https://www.instagram.com/peakclassdetail/" target="_blank" rel="noopener">Instagram</a>
+        <a class="phone" href="https://www.naffy.io/peakclassdetail/poradnik-Aof" target="_blank" rel="noopener">E-book</a>
+      </nav>
+      <p class="foot__c">© {year} Peak Class Detail</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .foot { position: relative; z-index: 1; padding: clamp(2.5rem, 8vh, 5.625rem) 0 32px; background: var(--bg-2); overflow: hidden; }
+  .foot__mark {
+    font-size: 12vw;
+    line-height: 0.8;
+    white-space: nowrap;
+    width: max-content;
+    background: linear-gradient(180deg, rgba(233, 237, 243, 0.16), rgba(233, 237, 243, 0.02));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    
+  }
+  .foot__row { margin-top: 2rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem 2rem; color: var(--mute); font-size: 0.9rem; }
+  .foot__links { display: flex; gap: 1.6rem; color: var(--ink); }
+  @media (max-width: 760px) { .foot__row { flex-direction: column; } }
+</style>

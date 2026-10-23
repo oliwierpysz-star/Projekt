@@ -1,0 +1,52 @@
+---
+import '../styles/global.css';
+
+interface Props { title?: string; description?: string; }
+const {
+  title = 'Peak Class Detail | Mobilny detailing, Śląsk i Małopolska',
+  description = 'Mobilny detailing door to door na Śląsku i w Małopolsce. Odbieramy auto spod Twoich drzwi i oddajemy je lśniące w to samo miejsce. Darmowa wycena: 881 265 265.',
+} = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const og = new URL('/og.jpg', Astro.site);
+
+const ld = {
+  '@context': 'https://schema.org',
+  '@type': 'AutomotiveBusiness',
+  name: 'Peak Class Detail',
+  description,
+  telephone: '+48 881 265 265',
+  url: Astro.site?.toString(),
+  areaServed: [
+    { '@type': 'AdministrativeArea', name: 'Województwo śląskie' },
+    { '@type': 'AdministrativeArea', name: 'Województwo małopolskie' },
+  ],
+  sameAs: ['https://www.instagram.com/peakclassdetail/'],
+  priceRange: 'od 450 zł',
+};
+---
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#06080b" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pl_PL" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+  <body>
+    <div class="leds" aria-hidden="true"><i></i><i></i><i></i></div>
+    <slot />
+  </body>
+</html>

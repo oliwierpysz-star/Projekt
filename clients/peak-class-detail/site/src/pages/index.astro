@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Route from '../components/Route.astro';
+import Lamp from '../components/Lamp.astro';
+import Services from '../components/Services.astro';
+import Work from '../components/Work.astro';
+import Extras from '../components/Extras.astro';
+import Quote from '../components/Quote.astro';
+import Footer from '../components/Footer.astro';
+---
+<Base>
+  <Nav />
+  <main>
+    <Hero />
+    <Route />
+    <Lamp />
+    <Services />
+    <Work />
+    <Extras />
+    <Quote />
+  </main>
+  <Footer />
+  <script>
+    import '../scripts/main.ts';
+  </script>
+</Base>

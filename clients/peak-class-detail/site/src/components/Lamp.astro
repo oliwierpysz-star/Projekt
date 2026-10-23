@@ -1,0 +1,47 @@
+---
+---
+<section class="lamp" id="lampa">
+  <div class="wrap lamp__grid">
+    <div class="lamp__head">
+      <h2 class="display h2 rise">
+        <span class="ln"><span>Spójrz</span></span>
+        <span class="ln"><span><em>bliżej.</em></span></span>
+      </h2>
+      <p class="lead rise-fade">W słońcu lakier wygląda dobrze. Pod lampą widać rysy i hologramy. Przesuń światło po masce.</p>
+    </div>
+
+    <div class="lamp__panel sweep" data-lamp>
+      <canvas class="lamp__gl" aria-label="Lakier pod lampą inspekcyjną: przed korektą i po korekcie" role="img" data-lamp-gl></canvas>
+      <div class="lamp__switch" role="radiogroup" aria-label="Stan lakieru">
+        <button class="chip" type="button" role="radio" aria-checked="true" data-lamp-mode="0">Przed korektą</button>
+        <button class="chip" type="button" role="radio" aria-checked="false" data-lamp-mode="1">Po korekcie</button>
+      </div>
+      <p class="lamp__hint caption" aria-hidden="true" data-lamp-hint>Przesuń palcem lub kursorem</p>
+    </div>
+
+    <p class="lamp__note">
+      Korekta lakieru usuwa zarysowania i hologramy maszynowym polerowaniem. Powłoka ceramiczna utrwala efekt na długo.
+      <a class="act act--accent" href="#uslugi">Ceny usług <span class="arr" aria-hidden="true">→</span></a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .lamp { padding: clamp(5rem, 12vh, 9.375rem) 0; background: linear-gradient(180deg, var(--bg-2), var(--bg) 60%, var(--bg-2)); }
+  .lamp__grid { display: grid; gap: clamp(1.75rem, 4vh, 3rem); }
+  .lamp__head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2rem; align-items: end; }
+  .lamp__panel { position: relative; aspect-ratio: 21 / 9; border-radius: 4px; overflow: hidden; background: #020305; touch-action: pan-y; cursor: none; }
+  .lamp__gl { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .lamp__switch { position: absolute; left: 50%; bottom: clamp(0.875rem, 3vw, 1.75rem); transform: translateX(-50%); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: rgba(6, 8, 11, 0.6); padding: 6px; border-radius: 999px; cursor: auto; }
+  .lamp__switch .chip { min-width: 9.5rem; border-color: transparent; }
+  .lamp__switch .chip[aria-checked='true'] { border-color: var(--accent); }
+  .lamp__hint { position: absolute; top: clamp(0.875rem, 2.4vw, 1.5rem); left: 50%; transform: translateX(-50%); transition: opacity 0.6s; pointer-events: none; }
+  .lamp__panel.is-touched .lamp__hint { opacity: 0; }
+  .lamp__note { color: var(--mute); max-width: 62ch; display: flex; flex-wrap: wrap; gap: 0.8rem 1.6rem; align-items: baseline; }
+  @media (max-width: 760px) {
+    .lamp__head { grid-template-columns: 1fr; gap: 1rem; }
+    .lamp__panel { aspect-ratio: 4 / 5; margin-inline: calc(var(--gutter) * -1); border-radius: 0; }
+    .lamp__switch .chip { min-width: 0; font-size: 0.85rem; padding-inline: 0.9em; }
+    .lamp__note { font-size: 0.95rem; }
+  }
+</style>

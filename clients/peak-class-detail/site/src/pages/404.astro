@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Nie ma takiej strony | Peak Class Detail">
+  <main class="nf">
+    <p class="caption">Błąd 404</p>
+    <h1 class="display">Tu nic<br /><em>nie błyszczy.</em></h1>
+    <p class="nf__lead">Ta strona nie istnieje albo została przeniesiona.</p>
+    <a class="act act--accent" href="/">Wróć na stronę główną <span class="arr" aria-hidden="true">→</span></a>
+  </main>
+</Base>
+<style>
+  .nf { min-height: 100svh; display: grid; align-content: center; justify-items: start; gap: 1.4rem; padding: 0 var(--gutter); max-width: var(--max); margin: 0 auto; }
+  .nf h1 { font-size: clamp(2.6rem, 10vw, 9rem); }
+  .nf__lead { color: var(--mute); }
+</style>

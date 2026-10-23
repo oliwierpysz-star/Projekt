@@ -1,0 +1,137 @@
+---
+const sizes = ['Miejskie', 'Kompakt / sedan', 'Kombi / SUV', 'Van / pickup'];
+const services = ['Pielęgnacja wnętrza', 'Detailing zewnętrzny', 'Full detail', 'Korekta lakieru', 'Powłoka ceramiczna', 'Nie wiem, doradźcie'];
+const rules = [
+  'Klient zobowiązany jest do punktualnego stawienia się na umówiony termin.',
+  'W przypadku spóźnienia powyżej 30 minut usługa może zostać anulowana, a zadatek przepada.',
+  'Odwołanie lub zmiana terminu krócej niż 24 h przed wizytą skutkuje naliczeniem 50% wartości usługi.',
+  'Samochód powinien być dostarczony w stanie umożliwiającym wykonanie usługi.',
+  'Peak Class Detail nie odpowiada za przedmioty pozostawione w pojeździe.',
+  'Złożenie rezerwacji oraz przesłanie zadatku na wcześniej uzgodniony numer konta oznacza akceptację niniejszego regulaminu.',
+  'W przypadku wykrycia dodatkowych zabrudzeń lub uszkodzeń, mogących wydłużyć czas pracy, cena usługi może zostać odpowiednio skorygowana.',
+  'Klient zobowiązuje się do poinformowania o wszelkich wcześniejszych powłokach ochronnych lub ingerencjach w lakier, tapicerkę i elementy wnętrza.',
+  'Po odbiorze pojazdu reklamacje dotyczące jakości wykonania przyjmowane są wyłącznie w dniu wydania auta.',
+  'Peak Class Detail zastrzega sobie prawo do odmowy wykonania usługi w przypadku rażącego zaniedbania stanu pojazdu lub naruszenia zasad regulaminu.',
+];
+---
+<section class="quote" id="wycena">
+  <div class="wrap quote__grid">
+    <div class="quote__head">
+      <h2 class="display h2 rise">
+        <span class="ln"><span>Darmowa</span></span>
+        <span class="ln"><span><em>wycena.</em></span></span>
+      </h2>
+      <p class="lead rise-fade">Zaznacz, co to za auto i czego potrzebuje. Złożymy z tego SMS, a my odpiszemy z wyceną.</p>
+      <div class="quote__direct">
+        <a class="phone quote__tel" href="tel:+48881265265">881 265 265</a>
+        <a class="act" href="https://www.instagram.com/peakclassdetail/" target="_blank" rel="noopener">Instagram @peakclassdetail <span class="arr" aria-hidden="true">→</span></a>
+        <p class="caption">Śląsk i Małopolska · dojeżdżamy do Ciebie</p>
+      </div>
+    </div>
+
+    <form class="slip" data-quote novalidate>
+      <p class="slip__top caption"><span>Zlecenie</span><span>Peak Class Detail</span></p>
+
+      <div class="slip__row">
+        <label class="slip__field">
+          <span>Auto</span>
+          <input name="car" type="text" placeholder="np. Audi A4 B9" autocomplete="off" />
+        </label>
+        <label class="slip__field">
+          <span>Miejscowość</span>
+          <input name="city" type="text" placeholder="np. Katowice" autocomplete="address-level2" />
+        </label>
+      </div>
+
+      <fieldset class="slip__group">
+        <legend>Wielkość auta</legend>
+        <div class="slip__chips slip__chips--4" data-single="size">
+          {sizes.map((s) => <button class="chip" type="button" aria-pressed="false" data-val={s}>{s}</button>)}
+        </div>
+      </fieldset>
+
+      <fieldset class="slip__group">
+        <legend>Usługa</legend>
+        <div class="slip__chips slip__chips--3" data-multi="svc">
+          {services.map((s) => <button class="chip" type="button" aria-pressed="false" data-val={s}>{s}</button>)}
+        </div>
+      </fieldset>
+
+      <div class="slip__row">
+        <label class="slip__field">
+          <span>Kiedy pasuje</span>
+          <input name="when" type="text" placeholder="np. przyszły weekend" autocomplete="off" />
+        </label>
+        <label class="slip__field">
+          <span>Imię</span>
+          <input name="name" type="text" placeholder="opcjonalnie" autocomplete="given-name" />
+        </label>
+      </div>
+
+      <div class="slip__out">
+        <span class="caption">Twoja wiadomość</span>
+        <p data-quote-out aria-live="polite"></p>
+      </div>
+
+      <div class="slip__acts">
+        <a class="act act--accent" href="sms:+48881265265" data-quote-sms>Wyślij SMS <span class="arr" aria-hidden="true">→</span></a>
+        <button class="act" type="button" data-quote-copy>Skopiuj treść <span class="arr" aria-hidden="true">→</span></button>
+      </div>
+    </form>
+
+    <details class="rules">
+      <summary><span class="act">Regulamin <span class="arr" aria-hidden="true">↓</span></span></summary>
+      <ol>{rules.map((r) => <li>{r}</li>)}</ol>
+    </details>
+  </div>
+</section>
+
+<style>
+  .quote { padding: clamp(5.625rem, 14vh, 10.625rem) 0 clamp(4.375rem, 10vh, 7.5rem); background: linear-gradient(180deg, var(--bg), var(--bg-3) 55%, var(--bg-2)); }
+  .quote__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 6rem); align-items: start; }
+  .quote__head { position: relative; }
+  .quote__head .lead { margin-top: 1.4rem; }
+  .quote__direct { margin-top: 2.4rem; display: grid; gap: 1rem; justify-items: start; }
+  .quote__tel { font-size: clamp(1.8rem, 3.4vw, 3rem); font-stretch: 118%; font-weight: 750; }
+
+  .slip {
+    position: relative;
+    padding: clamp(1.25rem, 3vw, 2.5rem);
+    background: linear-gradient(170deg, rgba(233, 237, 243, 0.05), rgba(233, 237, 243, 0.015));
+    border: 1px solid var(--hair);
+    display: grid; gap: 1.4rem;
+  }
+  .slip__top { display: flex; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px dashed var(--hair); }
+  .slip__row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; }
+  .slip__field { display: grid; gap: 0.35rem; }
+  .slip__field span, .slip__group legend { font-size: 0.78rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); font-stretch: 112%; padding: 0; }
+  .slip__field input {
+    font: inherit; font-size: 1rem; color: var(--ink); background: transparent; width: 100%; min-width: 0;
+    border: 0; border-bottom: 1px solid var(--hair); padding: 0.55rem 0; border-radius: 0; outline: none;
+    transition: border-color 0.3s;
+  }
+  .slip__field input:focus { border-color: var(--accent); }
+  .slip__field input::placeholder { color: var(--dim); }
+  .slip__group { border: 0; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+  .slip__chips { display: grid; gap: 8px; }
+  .slip__chips--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .slip__chips--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .slip__chips .chip { padding-inline: 0.6em; font-size: 0.86rem; }
+  .slip__out { padding: 1rem 1.1rem; background: rgba(6, 8, 11, 0.6); border-left: 2px solid var(--accent); display: grid; gap: 0.4rem; }
+  .slip__out p { font-size: 0.95rem; color: var(--ink); min-height: 3em; white-space: pre-line; }
+  .slip__acts { display: flex; flex-wrap: wrap; gap: 1rem 2rem; font-size: 1.05rem; }
+
+  .rules { grid-column: 1 / -1; color: var(--mute); }
+  .rules summary { list-style: none; cursor: pointer; display: inline-block; }
+  .rules summary::-webkit-details-marker { display: none; }
+  .rules[open] .arr { transform: rotate(180deg); display: inline-block; }
+  .rules ol { margin: 1.2rem 0 0; padding-left: 1.3rem; display: grid; gap: 0.5rem; max-width: 80ch; font-size: 0.92rem; }
+
+  @media (max-width: 900px) {
+    .quote__grid { grid-template-columns: minmax(0, 1fr); }
+    .quote__direct { margin-top: 1.4rem; }
+    .slip { margin-inline: calc(var(--gutter) * -0.4); }
+    .slip__chips--4, .slip__chips--3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .slip__row { gap: 0.8rem; }
+  }
+</style>

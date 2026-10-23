@@ -1,0 +1,83 @@
+---
+const stops = [
+  { t: 'Dzwonisz', d: 'Mówisz, co to za auto i czego potrzebuje. Wycena jest darmowa.' },
+  { t: 'Oddajesz kluczyki', d: 'Odbieramy auto spod Twojego domu albo pracy.' },
+  { t: 'Odbierasz lśniące', d: 'Oddajemy je w to samo miejsce. Ty nigdzie nie jedziesz.' },
+];
+---
+<section class="route" id="jak">
+  <div class="wrap route__grid">
+    <div class="route__head">
+      <h2 class="display h2 rise">
+        <span class="ln"><span>Ty nigdzie</span></span>
+        <span class="ln"><span>nie <em>jedziesz.</em></span></span>
+      </h2>
+      <p class="lead rise-fade">Detailing door to door na terenie całego Śląska i Małopolski. Cała robota dzieje się po naszej stronie.</p>
+    </div>
+
+    <ol class="route__map" data-route>
+      <svg class="route__line" viewBox="0 0 1000 120" preserveAspectRatio="none" aria-hidden="true">
+        <path class="route__base" d="M20 60 C 220 0, 330 120, 500 60 S 800 0, 980 60" />
+        <path class="route__draw" d="M20 60 C 220 0, 330 120, 500 60 S 800 0, 980 60" pathLength="1" data-route-path />
+      </svg>
+      <svg class="route__line route__line--v" viewBox="0 0 120 1000" preserveAspectRatio="none" aria-hidden="true">
+        <path class="route__base" d="M60 0 L60 1000" />
+        <path class="route__draw" d="M60 0 L60 1000" pathLength="1" data-route-path-v />
+      </svg>
+      {stops.map((s) => (
+        <li class="route__stop" data-stop>
+          <span class="route__pin" aria-hidden="true"></span>
+          <h3>{s.t}</h3>
+          <p>{s.d}</p>
+        </li>
+      ))}
+    </ol>
+
+    <dl class="route__stats">
+      <div><dt class="display"><span data-count="1000">1000</span>+</dt><dd>aut przeszło przez nasze ręce</dd></div>
+      <div><dt class="display"><span data-count="50">50</span> tys.</dt><dd>osób śledzi naszą pracę na Instagramie</dd></div>
+    </dl>
+  </div>
+</section>
+
+<style>
+  .route { padding: clamp(6.875rem, 16vh, 12.5rem) 0 clamp(5.625rem, 12vh, 10rem); background: linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%); }
+  .route__grid { display: grid; gap: clamp(3rem, 7vh, 5.625rem); }
+  .route__head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2rem; align-items: end; }
+  .route__map { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; padding-top: 130px; }
+  .route__line { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 120px; overflow: visible; }
+  .route__line--v { display: none; }
+  .route__line path { fill: none; vector-effect: non-scaling-stroke; }
+  .route__base { stroke: var(--hair); stroke-width: 1; stroke-dasharray: 2 6; }
+  .route__draw { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 6px rgba(91, 140, 255, 0.7)); }
+  .route__stop { position: relative; }
+  .route__stop:nth-of-type(1) { padding-right: 2rem; }
+  .route__stop:nth-of-type(2) { text-align: center; }
+  .route__stop:nth-of-type(3) { text-align: right; padding-left: 2rem; }
+  .route__pin { position: absolute; top: -78px; width: 14px; height: 14px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); box-shadow: 0 0 0 6px rgba(91, 140, 255, 0.08); transition: background 0.4s, box-shadow 0.4s; }
+  .route__stop:nth-of-type(1) .route__pin { left: 12px; }
+  .route__stop:nth-of-type(2) .route__pin { left: calc(50% - 7px); }
+  .route__stop:nth-of-type(3) .route__pin { right: 12px; }
+  .route__stop.is-on .route__pin { background: var(--accent); box-shadow: 0 0 0 6px rgba(91, 140, 255, 0.18), 0 0 24px 4px rgba(91, 140, 255, 0.55); }
+  .route__stop h3 { font-stretch: 120%; font-weight: 800; text-transform: uppercase; font-size: clamp(1.1rem, 1.6vw, 1.5rem); letter-spacing: 0.01em; }
+  .route__stop p { margin-top: 0.5rem; color: var(--mute); font-size: 0.98rem; max-width: 30ch; }
+  .route__stop:nth-of-type(2) p { margin-inline: auto; }
+  .route__stop:nth-of-type(3) p { margin-left: auto; }
+
+  .route__stats { margin: 0; display: grid; grid-template-columns: repeat(2, auto); justify-content: start; gap: 1rem clamp(3rem, 8vw, 8rem); }
+  .route__stats dt { font-size: clamp(2.6rem, 6vw, 5.6rem); font-variant-numeric: tabular-nums; }
+  .route__stats dd { margin: 0.4rem 0 0; color: var(--mute); max-width: 24ch; }
+
+  @media (max-width: 760px) {
+    .route__head { grid-template-columns: 1fr; gap: 1rem; }
+    .route__map { grid-template-columns: 1fr; gap: 2.2rem; padding: 0 0 0 54px; }
+    .route__line { display: none; }
+    .route__line--v { display: block; left: 0; top: 10px; width: 32px; height: calc(100% - 10px); }
+    .route__stop, .route__stop:nth-of-type(n) { text-align: left; padding: 0; }
+    .route__stop p, .route__stop:nth-of-type(n) p { margin-left: 0; }
+    .route__pin, .route__stop:nth-of-type(n) .route__pin { top: 6px; left: -45px; right: auto; margin-left: 0; }
+    .route__stats { grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .route__stats dt { font-size: 2.3rem; }
+    .route__stats dd { font-size: 0.88rem; }
+  }
+</style>
