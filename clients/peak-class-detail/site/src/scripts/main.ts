@@ -79,10 +79,10 @@ if (!reduced) {
     onUpdate: (s) => { heroProgress = gsap.utils.clamp(0, 1, s.progress / 0.8); },
   });
   const tl = gsap.timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom bottom', scrub: 0.6 } });
-  tl.to($$('.ln > span', heroA), { yPercent: -110, stagger: 0.04, duration: 0.18, ease: 'none' }, 0.36)
+  tl.to($$('.ln > span', heroA), { yPercent: -110, stagger: 0.04, duration: 0.18, ease: 'none' }, 0.3)
     .to($('[data-hero-cue]'), { opacity: 0, duration: 0.1 }, 0.05)
-    .to($$('.ln > span', heroB), { y: 0, stagger: 0.05, duration: 0.2, ease: 'none' }, 0.6)
-    .to($$('.hero__lead, .hero__acts', heroB), { opacity: 1, y: 0, stagger: 0.05, duration: 0.15 }, 0.74)
+    .to($$('.ln > span', heroB), { y: 0, stagger: 0.05, duration: 0.2, ease: 'none' }, 0.44)
+    .to($$('.hero__lead, .hero__acts', heroB), { opacity: 1, y: 0, stagger: 0.05, duration: 0.15 }, 0.6)
     .to({}, { duration: 0.12 });
   // intro: first title rises on load
   gsap.from($$('.ln > span', heroA), { yPercent: 110, stagger: 0.08, duration: 1.1, ease: 'expo.out', delay: 0.15 });
