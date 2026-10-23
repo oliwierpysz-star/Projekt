@@ -13,9 +13,26 @@ uniform vec2 uCover;   // uv scale for object-fit: cover
 uniform float uBar;    // bar position in screen x (0..1), may run past the edges
 uniform float uTime;
 uniform float uAspect;
+uniform float uProc;   // 1 = no dirty photo yet: fake the mud from the clean one
 
 float hash(float n){ return fract(sin(n) * 43758.5453); }
 float noise(float x){ float i = floor(x); float f = fract(x); return mix(hash(i), hash(i + 1.0), f * f * (3.0 - 2.0 * f)); }
+float h2(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(h2(i), h2(i + vec2(1, 0)), f.x), mix(h2(i + vec2(0, 1)), h2(i + vec2(1, 1)), f.x), f.y); }
+float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { v += a * vn(p); p *= 2.03; a *= 0.5; } return v; }
+vec3 fakeDirt(vec3 c, vec2 uv){
+  float lum = dot(c, vec3(0.299, 0.587, 0.114));
+  // dusty film: flatter, warmer, highlights dulled
+  vec3 dust = mix(vec3(lum), c, 0.35) * vec3(1.08, 0.97, 0.82);
+  dust = mix(dust, vec3(0.30, 0.26, 0.21), 0.28) * 0.9;
+  // splashes: heavier low down, spared on the bright light bars
+  float n = fbm(uv * vec2(7.0, 11.0)) * 0.7 + fbm(uv * vec2(28.0, 40.0)) * 0.3;
+  float low = smoothstep(0.35, 0.9, uv.y);
+  float m = smoothstep(0.52 - low * 0.18, 0.72 - low * 0.18, n) * (1.0 - smoothstep(0.7, 0.92, lum));
+  vec3 mud = vec3(0.26, 0.2, 0.14) * (0.55 + 0.6 * fbm(uv * 60.0));
+  return mix(dust, mud, m * 0.85);
+}
 
 void main(){
   vec2 uv = (vUv - 0.5) * uCover + 0.5;
@@ -24,8 +41,8 @@ void main(){
   float wob = (noise(vUv.y * 9.0 + uTime * 0.6) - 0.5) * 0.018 + (noise(vUv.y * 31.0 - uTime) - 0.5) * 0.006;
   float x = vUv.x + wob;
   float clean = 1.0 - smoothstep(uBar - 0.004, uBar + 0.004, x);
-  vec3 dirty = texture2D(tDirty, uv).rgb;
   vec3 cl = texture2D(tClean, uv).rgb;
+  vec3 dirty = uProc > 0.5 ? fakeDirt(cl, uv) : texture2D(tDirty, uv).rgb;
   // freshly washed band behind the bar looks wetter: lift highlights
   float wet = smoothstep(0.22, 0.0, uBar - x) * clean;
   cl += pow(max(cl - 0.45, 0.0), vec3(1.5)) * wet * 1.6;
@@ -58,12 +75,13 @@ function loadImage(src: string) {
   });
 }
 
-export async function initHeroGL(canvas: HTMLCanvasElement, getProgress: () => number) {
+export async function initHeroGL(canvas: HTMLCanvasElement, getProgress: () => number, variant: string) {
   const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' });
   if (!gl) return null;
   const portrait = matchMedia('(orientation: portrait)').matches;
   const set = portrait ? 'phone' : 'desktop';
-  const [dirty, clean] = await Promise.all([loadImage(`/hero/dirty-${set}.webp`), loadImage(`/hero/clean-${set}.webp`)]);
+  const clean = await loadImage(`/hero/${variant}/clean-${set}.webp`);
+  const dirty = await loadImage(`/hero/${variant}/dirty-${set}.webp`).catch(() => null);
 
   const prog = gl.createProgram()!;
   gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
@@ -88,8 +106,9 @@ export async function initHeroGL(canvas: HTMLCanvasElement, getProgress: () => n
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img);
   };
-  tex(dirty, 0);
+  tex(dirty || clean, 0);
   tex(clean, 1);
+  gl.uniform1f(gl.getUniformLocation(prog, 'uProc'), dirty ? 0 : 1);
   gl.uniform1i(gl.getUniformLocation(prog, 'tDirty'), 0);
   gl.uniform1i(gl.getUniformLocation(prog, 'tClean'), 1);
   const uCover = gl.getUniformLocation(prog, 'uCover');

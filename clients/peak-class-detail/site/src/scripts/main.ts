@@ -73,6 +73,23 @@ const hero = $('[data-hero]')!;
 const heroA = $('[data-hero-a]')!;
 const heroB = $('[data-hero-b]')!;
 let heroProgress = 0;
+// Hero variants for the client to choose from: ?hero=a|b|c (the choice is remembered on this device)
+const params = new URLSearchParams(location.search);
+const VARIANTS = ['a', 'b', 'c'];
+let variant = 'a';
+try { variant = params.get('hero') || sessionStorage.getItem('hero') || 'a'; } catch { variant = params.get('hero') || 'a'; }
+if (!VARIANTS.includes(variant)) variant = 'a';
+if (params.has('hero')) {
+  try { sessionStorage.setItem('hero', variant); } catch {}
+  const pick = $('[data-hero-pick]')!;
+  pick.hidden = false;
+  $$('a', pick).forEach((a) => a.setAttribute('aria-current', String(a.getAttribute('href') === `?hero=${variant}`)));
+}
+if (variant !== 'a') {
+  const pic = $('.hero__still')!;
+  $<HTMLSourceElement>('source', pic)!.srcset = `/hero/${variant}/clean-phone.webp`;
+  $<HTMLImageElement>('img', pic)!.src = `/hero/${variant}/clean-desktop.webp`;
+}
 if (!reduced) {
   ScrollTrigger.create({
     trigger: hero, start: 'top top', end: 'bottom bottom', scrub: true,
@@ -86,7 +103,7 @@ if (!reduced) {
     .to({}, { duration: 0.12 });
   // intro: first title rises on load
   gsap.from($$('.ln > span', heroA), { yPercent: 110, stagger: 0.08, duration: 1.1, ease: 'expo.out', delay: 0.15 });
-  initHeroGL($<HTMLCanvasElement>('[data-hero-gl]')!, () => heroProgress)
+  initHeroGL($<HTMLCanvasElement>('[data-hero-gl]')!, () => heroProgress, variant)
     .then((ok) => { if (ok) hero.classList.add('is-gl'); })
     .catch(() => {});
 }
