@@ -73,9 +73,9 @@ const hero = $('[data-hero]')!;
 const heroA = $('[data-hero-a]')!;
 const heroB = $('[data-hero-b]')!;
 let heroProgress = 0;
-// Hero variants for the client to choose from: ?hero=a|b|c (the choice is remembered on this device)
+// Hero variants for the client to choose from: ?hero=a|b|c|d (the choice is remembered on this device)
 const params = new URLSearchParams(location.search);
-const VARIANTS = ['a', 'b', 'c'];
+const VARIANTS = ['a', 'b', 'c', 'd'];
 let variant = 'a';
 try { variant = params.get('hero') || sessionStorage.getItem('hero') || 'a'; } catch { variant = params.get('hero') || 'a'; }
 if (!VARIANTS.includes(variant)) variant = 'a';
