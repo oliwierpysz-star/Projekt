@@ -2,7 +2,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { initHeroGL } from './hero-gl';
-import { initLampGL } from './lamp-gl';
+import { initPolishGL } from './polish-gl';
 
 gsap.registerPlugin(ScrollTrigger);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -72,7 +72,7 @@ addEventListener('keydown', (e) => { if (e.key === 'Escape' && !menu.hidden) clo
 const hero = $('[data-hero]')!;
 const heroA = $('[data-hero-a]')!;
 const heroB = $('[data-hero-b]')!;
-let heroProgress = 0;
+const heroState = { wash: 0, foam: 0, rinse: 0 };
 // Hero variants for the client to choose from: ?hero=a|b|c|d (the choice is remembered on this device)
 const params = new URLSearchParams(location.search);
 const VARIANTS = ['a', 'b', 'c', 'd'];
@@ -93,17 +93,24 @@ if (variant !== 'a') {
 if (!reduced) {
   ScrollTrigger.create({
     trigger: hero, start: 'top top', end: 'bottom bottom', scrub: true,
-    onUpdate: (s) => { heroProgress = gsap.utils.clamp(0, 1, s.progress / 0.8); },
+    onUpdate: (s) => {
+      const c = gsap.utils.clamp(0, 1);
+      heroState.wash = c(s.progress / 0.5);
+      heroState.foam = c((s.progress - 0.64) / 0.18);
+      heroState.rinse = c((s.progress - 0.82) / 0.16);
+    },
   });
   const tl = gsap.timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom bottom', scrub: 0.6 } });
-  tl.to($$('.ln > span', heroA), { yPercent: -110, stagger: 0.04, duration: 0.18, ease: 'none' }, 0.3)
-    .to($('[data-hero-cue]'), { opacity: 0, duration: 0.1 }, 0.05)
-    .to($$('.ln > span', heroB), { y: 0, stagger: 0.05, duration: 0.2, ease: 'none' }, 0.44)
-    .to($$('.hero__lead, .hero__acts', heroB), { opacity: 1, y: 0, stagger: 0.05, duration: 0.15 }, 0.6)
-    .to({}, { duration: 0.12 });
+  tl.to($$('.ln > span', heroA), { yPercent: -110, stagger: 0.03, duration: 0.12, ease: 'none' }, 0.22)
+    .to($('[data-hero-cue]'), { opacity: 0, duration: 0.06 }, 0.03)
+    .to($$('.ln > span', heroB), { y: 0, stagger: 0.04, duration: 0.14, ease: 'none' }, 0.32)
+    .to($$('.hero__lead, .hero__acts', heroB), { opacity: 1, y: 0, stagger: 0.04, duration: 0.1 }, 0.44)
+    .to(heroB, { opacity: 0, y: -30, duration: 0.06, ease: 'none' }, 0.6)
+    .to($('.hero__shade', hero), { opacity: 0, duration: 0.1, ease: 'none' }, 0.64)
+    .to({}, { duration: 0.22 }, 0.78);
   // intro: first title rises on load
   gsap.from($$('.ln > span', heroA), { yPercent: 110, stagger: 0.08, duration: 1.1, ease: 'expo.out', delay: 0.15 });
-  initHeroGL($<HTMLCanvasElement>('[data-hero-gl]')!, () => heroProgress, variant)
+  initHeroGL($<HTMLCanvasElement>('[data-hero-gl]')!, () => heroState, variant)
     .then((ok) => { if (ok) hero.classList.add('is-gl'); })
     .catch(() => {});
 }
@@ -136,15 +143,6 @@ if (!reduced) {
   ScrollTrigger.batch('.sweep', {
     start: 'top 88%', once: true,
     onEnter: (els) => els.forEach((el, i) => sweep(el as HTMLElement, i * 0.08)),
-  });
-
-  /* Poster strips sweep in when a poster enters */
-  $$('[data-poster]').forEach((p) => {
-    const strips = $$('[data-strip]', p);
-    gsap.from(strips, {
-      xPercent: -18, opacity: 0, stagger: 0.1, duration: 1, ease: 'expo.out',
-      scrollTrigger: { trigger: p, start: 'top 85%', horizontal: false },
-    });
   });
 
   /* Route: line draws with scroll, stops light up */
@@ -183,9 +181,27 @@ if (!reduced) {
   }
 }
 
-/* Lamp */
-const lampPanel = $('[data-lamp]');
-if (lampPanel) initLampGL(lampPanel);
+/* Korekta: scroll polishes the paint */
+const polish = $('[data-polish]');
+if (polish && !reduced) {
+  let pp = 0;
+  const words = $$('.w', polish);
+  const before = $('[data-polish-before]', polish)!, after = $('[data-polish-after]', polish)!;
+  const leads = $$('[data-polish-lead]', polish);
+  ScrollTrigger.create({
+    trigger: polish, start: 'top top', end: 'bottom bottom', scrub: true,
+    onUpdate: (s) => {
+      pp = s.progress;
+      words.forEach((w, i) => w.classList.toggle('is-lit', pp > 0.12 + i * 0.3));
+      before.style.opacity = String(pp < 0.86 ? 1 : 0);
+      after.style.opacity = String(pp < 0.86 ? 0 : 1);
+    },
+  });
+  gsap.to(leads, { opacity: 1, y: 0, stagger: 0.08, ease: 'none', scrollTrigger: { trigger: polish, start: '88% bottom', end: '97% bottom', scrub: 0.5 } });
+  initPolishGL($<HTMLCanvasElement>('[data-polish-gl]', polish)!, () => pp)
+    .then((ok) => { if (ok) polish.classList.add('is-gl'); })
+    .catch(() => {});
+}
 
 /* Realizacje: native scroll-snap + arrows, counter, mouse drag, lazy video */
 const track = $('[data-work-track]');
