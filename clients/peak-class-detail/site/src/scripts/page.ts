@@ -1,5 +1,8 @@
 // Subpages (Realizacje): nav that hides on scroll, the phone menu, and the job close-ups.
 import { initCases } from './cases';
+import { initBg } from './bgfx';
+
+initBg(document.querySelector<HTMLCanvasElement>('[data-bgfx]')!);
 
 const $ = <T extends Element = HTMLElement>(s: string, r: ParentNode = document) => r.querySelector<T>(s);
 

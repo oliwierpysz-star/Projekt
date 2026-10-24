@@ -4,11 +4,21 @@ import Lenis from 'lenis';
 import { initHeroGL } from './hero-gl';
 import { initPolishGL } from './polish-gl';
 import { initCases } from './cases';
+import { initBg } from './bgfx';
 
 gsap.registerPlugin(ScrollTrigger);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = <T extends Element = HTMLElement>(s: string, r: ParentNode = document) => r.querySelector<T>(s);
 const $$ = <T extends Element = HTMLElement>(s: string, r: ParentNode = document) => [...r.querySelectorAll<T>(s)];
+
+/* Background paint: skipped while a full-screen scene (hero, korekta, studio) covers the screen */
+{
+  const scenes = $$('[data-hero], [data-polish], [data-studio]');
+  initBg($<HTMLCanvasElement>('[data-bgfx]')!, () => {
+    const y = scrollY;
+    return scenes.some((s) => y >= s.offsetTop && y <= s.offsetTop + s.offsetHeight - innerHeight);
+  });
+}
 
 /* Smooth scroll on desktop only; touch keeps native scrolling */
 let lenis: Lenis | null = null;
@@ -232,6 +242,10 @@ if (polish && !reduced) {
       cta.classList.toggle('is-on', pp >= 0.86);
     },
   });
+  // way in: the lamp bar sweeps down as the section rises; way out: the lights dim under the next section
+  const pstage = $('.polish__stage', polish)!;
+  ScrollTrigger.create({ trigger: polish, start: 'top 85%', end: 'top 5%', scrub: true, onUpdate: (st) => pstage.style.setProperty('--lit', st.progress.toFixed(3)) });
+  ScrollTrigger.create({ trigger: polish, start: 'bottom bottom', end: 'bottom 30%', scrub: true, onUpdate: (st) => pstage.style.setProperty('--dim', (st.progress * 0.85).toFixed(3)) });
   initPolishGL($<HTMLCanvasElement>('[data-polish-gl]', polish)!, () => pp)
     .then((ok) => { if (ok) polish.classList.add('is-gl'); })
     .catch(() => {});

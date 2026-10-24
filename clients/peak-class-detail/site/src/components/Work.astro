@@ -107,7 +107,9 @@ const drips = (s: string) => [...s].slice(0, 3).map((ch, i) => ({ x: 12 + ((ch.c
 
 <style>
   .work { padding: clamp(5.625rem, 14vh, 10.625rem) 0; }
-  .work__head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2rem; align-items: end; margin-bottom: clamp(1.5rem, 4vh, 3rem); }
+  .work__head { display: grid; grid-template-columns: 1fr 1.3fr; gap: 2rem; align-items: end; margin-bottom: clamp(1.5rem, 4vh, 3rem); }
+  /* title on the right here, for a change of rhythm */
+  .work__head h2 { order: 2; text-align: right; }
   .work__side { display: grid; gap: 1.6rem; }
   .work__ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 2.4rem; }
   .work__nav { display: flex; align-items: center; gap: 1.2rem; }
@@ -210,6 +212,7 @@ const drips = (s: string) => [...s].slice(0, 3).map((ch, i) => ({ x: 12 + ((ch.c
 
   @media (max-width: 760px) {
     .work__head { grid-template-columns: 1fr; gap: 1rem; }
+    .work__head h2 { order: 0; text-align: left; }
     .job { flex-basis: 82vw; }
     .work__arr { width: 44px; height: 44px; }
     .job__open .act { opacity: 1; transform: none; }

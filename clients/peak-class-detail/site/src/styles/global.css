@@ -127,49 +127,10 @@ section { position: relative; }
   background: var(--accent-soft);
 }
 
-/* Background, alive under the whole site (sections are transparent over it):
-   two slow pools of blue light, LED tubes reflected and drifting, and now and then a light pass
-   sweeping across like a lamp over paint. Transforms only, no blur filters. */
-.leds {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-.leds b {
-  position: absolute; width: 70vmax; height: 70vmax; border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(91, 140, 255, 0.09), rgba(91, 140, 255, 0.03) 55%, transparent);
-  animation: pool 70s ease-in-out infinite alternate;
-}
-.leds b:nth-of-type(1) { left: -20vmax; top: -10vmax; }
-.leds b:nth-of-type(2) { right: -25vmax; bottom: -25vmax; animation-duration: 90s; animation-delay: -40s; background: radial-gradient(closest-side, rgba(150, 175, 230, 0.07), transparent); }
-@keyframes pool { from { transform: translate(0, 0); } to { transform: translate(30vw, 25vh); } }
-.leds i {
-  position: absolute;
-  top: -10%;
-  width: 2px;
-  height: 120%;
-  background: linear-gradient(180deg, transparent, rgba(190, 210, 255, 0.22) 30%, rgba(190, 210, 255, 0.06) 70%, transparent);
-  box-shadow: 0 0 24px 6px rgba(91, 140, 255, 0.06);
-  animation: drift 38s ease-in-out infinite alternate;
-}
-.leds i:nth-of-type(1) { left: 9%; }
-.leds i:nth-of-type(2) { left: 31%; animation-duration: 52s; animation-delay: -12s; opacity: 0.55; }
-.leds i:nth-of-type(3) { left: 55%; animation-duration: 46s; animation-delay: -22s; opacity: 0.8; }
-.leds i:nth-of-type(4) { left: 74%; animation-duration: 58s; animation-delay: -5s; opacity: 0.5; }
-.leds i:nth-of-type(5) { left: 92%; animation-duration: 44s; animation-delay: -30s; }
-@keyframes drift { from { transform: translateX(-6vw); } to { transform: translateX(6vw); } }
-.leds s {
-  position: absolute; top: -20%; left: 0; width: 34vw; height: 140%;
-  background: linear-gradient(100deg, transparent, rgba(200, 215, 255, 0.035) 45%, rgba(200, 215, 255, 0.06) 50%, rgba(200, 215, 255, 0.035) 55%, transparent);
-  transform: translateX(-40vw) skewX(-12deg);
-  animation: pass 22s cubic-bezier(0.45, 0, 0.25, 1) infinite;
-}
-@keyframes pass { 0%, 55% { transform: translateX(-40vw) skewX(-12deg); } 100% { transform: translateX(110vw) skewX(-12deg); } }
-/* phones: the big pools stay still (memory), the thin lines keep drifting */
-@media (pointer: coarse) { .leds b { animation: none; } }
-@media (prefers-reduced-motion: reduce) { .leds * { animation: none !important; } }
+/* Background under the whole site (sections are transparent over it): dark glossy paint
+   reflecting the hexagon studio light, drawn by src/scripts/bgfx.ts */
+.bgfx { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 1.2s; }
+.bgfx.is-on { opacity: 1; }
 
 main { position: relative; z-index: 1; }
 
@@ -195,7 +156,6 @@ main { position: relative; z-index: 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .leds i { animation: none; }
   .js .rise .ln > span { transform: none; }
   .js .sweep { clip-path: none; }
 }
