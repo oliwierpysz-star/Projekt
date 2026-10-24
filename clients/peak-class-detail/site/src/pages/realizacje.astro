@@ -1,0 +1,104 @@
+---
+// Every job he has shown, one row each, alternating sides. Each row opens the full close-up.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Base from '../layouts/Base.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import JobCase from '../components/JobCase.astro';
+import jobs from '../data/jobs.json';
+import '@fontsource/knewave/latin-ext.css';
+import '@fontsource/knewave/latin.css';
+
+const all = import.meta.glob<{ default: ImageMetadata }>('../assets/jobs/*/*.jpg', { eager: true });
+const pic = (slug: string, f: string) => all[`../assets/jobs/${slug}/${f}`].default;
+// the three folded panels: cover in the middle, two more at the sides
+const three = (j: (typeof jobs)[number]) => [j.photos[1], j.photos[0], j.photos[2]].filter(Boolean);
+---
+<Base title="Realizacje | Peak Class Detail" description="Auta naszych klientów po detailingu: zdjęcia i filmy z realizacji Peak Class Detail. Śląsk i Małopolska.">
+  <Nav home={false} current="#realizacje" />
+  <main class="all">
+    <header class="wrap all__head">
+      <h1 class="display all__title">Wszystkie<br /><em>realizacje.</em></h1>
+      <p class="lead">Prawdziwe auta naszych klientów. Kliknij auto, żeby zobaczyć wszystkie zdjęcia i filmy.</p>
+    </header>
+
+    <ol class="all__list">
+      {jobs.map((j, i) => (
+        <li class:list={['row', { 'row--flip': i % 2 }]}>
+          <div class="wrap row__in">
+            <span class="row__tag" aria-hidden="true">{j.model}</span>
+            <div class="row__text">
+              <h2 class="row__name">{j.make} <em>{j.model}</em></h2>
+              {j.what && <p class="row__what">{j.what}</p>}
+              <button class="act" type="button" data-case-open={j.slug}>
+                Zobacz zdjęcia{j.clips.length ? ' i filmy' : ''} ({j.photos.length + j.clips.length}) <span class="arr" aria-hidden="true">→</span>
+              </button>
+            </div>
+            <button class="row__art" type="button" data-case-open={j.slug} aria-label={`${j.make} ${j.model}: zobacz zdjęcia`}>
+              {three(j).map((p) => (
+                <span class="row__panel"><Image src={pic(j.slug, p)} alt="" widths={[300, 520, 760]} sizes="(max-width: 760px) 30vw, 18vw" loading="lazy" /></span>
+              ))}
+            </button>
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <section class="wrap all__end">
+      <p class="display all__next">Twoje auto <em>następne?</em></p>
+      <a class="act act--accent" href="/#wycena">Darmowa wycena <span class="arr" aria-hidden="true">→</span></a>
+      <a class="phone all__tel" href="tel:+48881265265">881 265 265</a>
+    </section>
+
+    {jobs.map((j) => <JobCase job={j} />)}
+  </main>
+  <Footer />
+  <script>
+    import '../scripts/page.ts';
+  </script>
+</Base>
+
+<style>
+  .all { padding-top: clamp(7rem, 18vh, 11rem); }
+  .all__head { display: grid; justify-items: center; text-align: center; gap: 1.4rem; margin-bottom: clamp(3rem, 9vh, 6rem); }
+  .all__title { font-size: clamp(2.6rem, 8vw, 8rem); }
+  .all__head .lead { max-width: 40ch; }
+
+  .all__list { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(3rem, 10vh, 7rem); }
+  .row__in { position: relative; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: clamp(1.5rem, 5vw, 6rem); align-items: center; }
+  .row--flip .row__text { order: 2; }
+  .row__tag {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-7deg); z-index: -1; pointer-events: none;
+    font-family: 'Knewave', sans-serif; text-transform: uppercase; white-space: nowrap; font-size: clamp(5rem, 16vw, 16rem); line-height: 0.8;
+    color: transparent; -webkit-text-stroke: 2px rgba(91, 140, 255, 0.22); text-shadow: 0.08em 0.08em 0 rgba(91, 140, 255, 0.05);
+  }
+  .row__text { display: grid; justify-items: start; gap: 1rem; }
+  .row--flip .row__text { justify-items: end; text-align: right; }
+  .row__name { font-family: 'Knewave', sans-serif; text-transform: uppercase; font-size: clamp(2.2rem, 5.4vw, 5.6rem); line-height: 0.9; transform: rotate(-4deg); transform-origin: 0 100%; }
+  .row__name em { font-style: normal; color: var(--accent); font-size: 0.5em; }
+  .row__what { color: var(--mute); max-width: 36ch; }
+  .row__text .act { font-size: 1.05rem; }
+
+  /* three photos folded like a screen, as on the posters */
+  .row__art { display: flex; gap: 1.2%; align-items: center; perspective: 1400px; cursor: pointer; padding: 0; }
+  .row__panel { flex: 1; aspect-ratio: 9 / 15; overflow: hidden; background: #0a0c10; box-shadow: 0 30px 60px -24px rgba(0, 0, 0, 0.9); transition: transform 0.8s var(--ease); }
+  .row__panel:nth-child(1) { transform: rotateY(-24deg); transform-origin: 100% 50%; }
+  .row__panel:nth-child(2) { flex-grow: 1.2; }
+  .row__panel:nth-child(3) { transform: rotateY(24deg); transform-origin: 0 50%; }
+  .row__art:hover .row__panel:nth-child(1) { transform: rotateY(-14deg); }
+  .row__art:hover .row__panel:nth-child(3) { transform: rotateY(14deg); }
+  .row__panel img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.82); transition: filter 0.5s; }
+  .row__art:hover .row__panel img { filter: none; }
+
+  .all__end { display: grid; justify-items: center; text-align: center; gap: 1.4rem; padding: clamp(5rem, 16vh, 10rem) var(--gutter); }
+  .all__next { font-size: clamp(2.2rem, 6vw, 6rem); }
+  .all__end .act { font-size: 1.15rem; }
+  .all__tel { font-size: clamp(1.6rem, 3vw, 2.6rem); font-stretch: 118%; font-weight: 750; }
+
+  @media (max-width: 760px) {
+    .row__in { grid-template-columns: minmax(0, 1fr); }
+    .row--flip .row__text { order: 0; justify-items: start; text-align: left; }
+    .row__name { font-size: 2.2rem; }
+  }
+</style>

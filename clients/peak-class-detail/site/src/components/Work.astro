@@ -3,6 +3,8 @@ import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import '@fontsource/knewave/latin-ext.css';
 import '@fontsource/knewave/latin.css';
+import JobCase from './JobCase.astro';
+import jobs from '../data/jobs.json';
 
 const photos = import.meta.glob<{ default: ImageMetadata }>('../assets/work/*.jpg', { eager: true });
 const photo = (n: string) => photos[`../assets/work/${n}.jpg`].default;
@@ -14,12 +16,12 @@ const cutout = (n: string) => cutouts[`../assets/cutouts/${n}.png`]?.default;
 // painted in brush across the bottom, the work done in a bracketed note. Clicking a poster opens
 // the job up close with his clip. Panels: a photo, his clip, or a dark panel with the model painted on it.
 type Panel = { img: string } | { video: string } | { paint: string };
-const all: { make: string; model: string; what: string; done: string[]; car: string; video: string; panels: Panel[] }[] = [
-  { make: 'Audi', model: 'S5', what: 'Detailing lakieru i wnętrza', done: ['Detailing lakieru', 'Detailing wnętrza'], car: 's5-car', video: 's5', panels: [{ img: 's5-cockpit' }, { video: 's5' }, { img: 's5-wheel' }] },
-  { make: 'Golf', model: 'GTI', what: 'Korekta lakieru i pielęgnacja całego wnętrza', done: ['Korekta lakieru', 'Pielęgnacja całego wnętrza'], car: 'golf-car', video: 'golf', panels: [{ img: 'golf-cockpit' }, { video: 'golf' }, { img: 'golf-floor' }] },
-  { make: 'Mercedes', model: 'A45', what: 'Full detail z aplikacją wosku', done: ['Full detail', 'Aplikacja wosku'], car: 'a45-car', video: 'a45', panels: [{ img: 'a45-cockpit' }, { video: 'a45' }, { img: 'a45-vents' }] },
-  { make: 'BMW', model: 'F11', what: 'Full detail: lakier, dekontaminacja i wnętrze', done: ['Lakier', 'Dekontaminacja', 'Wnętrze'], car: 'f11-car', video: 'f11', panels: [{ img: 'f11-leather' }, { video: 'f11' }, { img: 'f11-wheel' }] },
-  { make: 'BMW', model: 'F45', what: 'Kompleksowa metamorfoza', done: ['Kompleksowa metamorfoza'], car: 'f45-car', video: 'f45', panels: [{ img: 'f45-side' }, { video: 'f45' }, { paint: 'F45' }] },
+const all: { slug: string; make: string; model: string; what: string; done: string[]; car: string; video: string; panels: Panel[] }[] = [
+  { slug: 'audi-s5', make: 'Audi', model: 'S5', what: 'Detailing lakieru i wnętrza', done: ['Detailing lakieru', 'Detailing wnętrza'], car: 's5-car', video: 's5', panels: [{ img: 's5-cockpit' }, { video: 's5' }, { img: 's5-wheel' }] },
+  { slug: 'golf-gti', make: 'Golf', model: 'GTI', what: 'Korekta lakieru i pielęgnacja całego wnętrza', done: ['Korekta lakieru', 'Pielęgnacja całego wnętrza'], car: 'golf-car', video: 'golf', panels: [{ img: 'golf-cockpit' }, { video: 'golf' }, { img: 'golf-floor' }] },
+  { slug: 'mercedes-a45', make: 'Mercedes', model: 'A45', what: 'Full detail z aplikacją wosku', done: ['Full detail', 'Aplikacja wosku'], car: 'a45-car', video: 'a45', panels: [{ img: 'a45-cockpit' }, { video: 'a45' }, { img: 'a45-vents' }] },
+  { slug: 'bmw-f11', make: 'BMW', model: 'F11', what: 'Full detail: lakier, dekontaminacja i wnętrze', done: ['Lakier', 'Dekontaminacja', 'Wnętrze'], car: 'f11-car', video: 'f11', panels: [{ img: 'f11-leather' }, { video: 'f11' }, { img: 'f11-wheel' }] },
+  { slug: 'bmw-f45', make: 'BMW', model: 'F45', what: 'Kompleksowa metamorfoza', done: ['Kompleksowa metamorfoza'], car: 'f45-car', video: 'f45', panels: [{ img: 'f45-side' }, { video: 'f45' }, { paint: 'F45' }] },
 ];
 const cars = all.filter((c) => cutout(c.car));
 // the carousel runs endlessly: three copies, the middle one is where it drifts; the others are for the wrap
@@ -28,7 +30,6 @@ const copies = [0, 1, 2];
 const nameSize = (s: string) => Math.min(20, 48 / (s.length * 0.52));
 // paint drips under the name, placed from the letters so each poster differs but stays the same between builds
 const drips = (s: string) => [...s].slice(0, 3).map((ch, i) => ({ x: 12 + ((ch.charCodeAt(0) * 37 + i * 29) % 70), h: 5 + ((ch.charCodeAt(0) * 13 + i * 7) % 9) }));
-const shots = (c: (typeof all)[number]) => c.panels.filter((p): p is { img: string } => 'img' in p);
 ---
 <section class="work" id="realizacje">
   <div class="wrap work__head">
@@ -92,35 +93,16 @@ const shots = (c: (typeof all)[number]) => c.panels.filter((p): p is { img: stri
           </b>
           <span class="job__what">{c.what}</span>
         </figcaption>
-        <button class="job__open" type="button" data-case-open={i} aria-label={`Zobacz z bliska: ${c.make} ${c.model}`}><span class="act">Zobacz z bliska <span class="arr" aria-hidden="true">→</span></span></button>
+        <button class="job__open" type="button" data-case-open={c.slug} aria-label={`Zobacz z bliska: ${c.make} ${c.model}`}><span class="act">Zobacz z bliska <span class="arr" aria-hidden="true">→</span></span></button>
       </figure>
     )))}
   </div>
 
-  {/* one close-up per job: his clip to play, the work done, the detail shots */}
-  {cars.map((c, i) => (
-    <dialog class="case" data-case={i} aria-label={`${c.make} ${c.model}, realizacja`}>
-      <div class="case__in">
-        <div class="case__media">
-          <video controls playsinline loop preload="none" poster={`/media/${c.video}.webp`} data-case-src={`/media/${c.video}.mp4`}></video>
-        </div>
-        <div class="case__body">
-          <button class="case__close act" type="button" data-case-close>Zamknij <span aria-hidden="true">✕</span></button>
-          <p class="case__top">Realizacja · Peak Class Detail</p>
-          <h3 class="case__name">{c.make} <em>{c.model}</em></h3>
-          <p class="case__what">{c.what}</p>
-          <ul class="case__done">{c.done.map((d) => <li>{d}</li>)}</ul>
-          <div class="case__shots">
-            {shots(c).map((p) => <Image src={photo(p.img)} alt={`${c.make} ${c.model}: detal po detailingu`} widths={[320, 560]} sizes="(max-width: 760px) 44vw, 260px" loading="lazy" />)}
-          </div>
-          <div class="case__acts">
-            <a class="act act--accent" href="#wycena" data-case-go>Chcę tak samo: darmowa wycena <span class="arr" aria-hidden="true">→</span></a>
-            <a class="phone" href="tel:+48881265265">881 265 265</a>
-          </div>
-        </div>
-      </div>
-    </dialog>
-  ))}
+  <div class="wrap work__all">
+    <a class="act" href="/realizacje">Wszystkie realizacje ({jobs.length}) <span class="arr" aria-hidden="true">→</span></a>
+  </div>
+
+  {jobs.filter((j) => cars.some((c) => c.slug === j.slug)).map((j) => <JobCase job={j} />)}
 </section>
 
 <style>
@@ -224,40 +206,12 @@ const shots = (c: (typeof all)[number]) => c.panels.filter((p): p is { img: stri
   .job:hover .job__open .act, .job__open:focus-visible .act { opacity: 1; transform: none; }
   .work__track.is-drag .job__open { cursor: grabbing; }
 
-  /* ---- close-up ---- */
-  .case { padding: 0; border: 0; background: transparent; color: var(--ink); max-width: none; max-height: none; width: 100%; height: 100%; }
-  .case::backdrop { background: rgba(3, 4, 6, 0.86); }
-  .case[open] { display: grid; place-items: center; }
-  .case__in {
-    position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: clamp(1.5rem, 3vw, 3.5rem); align-items: center;
-    width: min(76rem, 92vw); max-height: 90svh; overflow-y: auto; padding: clamp(1.25rem, 2.6vw, 2.75rem);
-    background: radial-gradient(80% 70% at 20% 30%, rgba(91, 140, 255, 0.09), transparent 70%), var(--bg-2);
-    box-shadow: 0 0 0 1px var(--hair), 0 60px 120px -40px rgba(0, 0, 0, 0.9);
-    animation: case-in 0.6s var(--ease);
-  }
-  @keyframes case-in { from { opacity: 0; transform: translateY(24px) scale(0.98); } }
-  .case__media video:focus { outline: none; }
-  .case__media video { display: block; max-height: calc(90svh - 5.5rem); max-width: 42vw; width: auto; height: auto; background: #000; }
-  .case__body { display: grid; gap: 1.1rem; align-content: center; justify-items: start; min-width: 0; }
-  .case__close { position: absolute; right: clamp(1.25rem, 2.6vw, 2.75rem); top: clamp(1rem, 2vw, 2rem); font-size: 0.95rem; }
-  .case__top { font-size: 0.78rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
-  .case__name { font-family: 'Knewave', sans-serif; text-transform: uppercase; font-size: clamp(2.6rem, 6vw, 5.5rem); line-height: 0.9; transform: rotate(-3deg); transform-origin: 0 100%; }
-  .case__name em { font-style: normal; color: var(--accent); font-size: 0.5em; }
-  .case__what { color: var(--mute); max-width: 40ch; }
-  .case__done { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; }
-  .case__done li { position: relative; padding-left: 1.3rem; }
-  .case__done li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 0.5rem; height: 0.5rem; background: var(--accent); clip-path: polygon(0 0, 100% 0, 50% 100%); }
-  .case__shots { display: flex; gap: 0.8rem; }
-  .case__shots img { width: clamp(8rem, 12vw, 13rem); height: auto; aspect-ratio: 3 / 4; object-fit: cover; }
-  .case__acts { display: flex; flex-wrap: wrap; align-items: baseline; gap: 1rem 2rem; margin-top: 0.4rem; font-size: 1.05rem; }
+  .work__all { margin-top: clamp(1.5rem, 4vh, 3rem); display: flex; justify-content: center; font-size: clamp(1.05rem, 1.4vw, 1.3rem); }
 
   @media (max-width: 760px) {
     .work__head { grid-template-columns: 1fr; gap: 1rem; }
     .job { flex-basis: 82vw; }
     .work__arr { width: 44px; height: 44px; }
     .job__open .act { opacity: 1; transform: none; }
-    .case__in { grid-template-columns: minmax(0, 1fr); width: 100%; max-height: 100svh; height: 100%; overflow-y: auto; align-content: start; padding-top: 3.5rem; }
-    .case__media video { max-width: 100%; max-height: 46svh; margin: 0 auto; }
-    .case__shots img { width: 40vw; }
   }
 </style>

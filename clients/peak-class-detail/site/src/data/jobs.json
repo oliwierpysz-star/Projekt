@@ -1,0 +1,197 @@
+[
+  {
+    "slug": "audi-s5",
+    "make": "Audi",
+    "model": "S5",
+    "what": "Detailing lakieru i wnętrza",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg",
+      "04.jpg",
+      "05.jpg",
+      "06.jpg",
+      "07.jpg"
+    ],
+    "clips": [
+      "v1"
+    ]
+  },
+  {
+    "slug": "golf-gti",
+    "make": "Golf",
+    "model": "GTI",
+    "what": "Korekta lakieru i pielęgnacja całego wnętrza",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg",
+      "04.jpg",
+      "05.jpg"
+    ],
+    "clips": [
+      "v1",
+      "v2",
+      "v3"
+    ]
+  },
+  {
+    "slug": "mercedes-a45",
+    "make": "Mercedes",
+    "model": "A45",
+    "what": "Full detail z aplikacją wosku",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg",
+      "04.jpg",
+      "05.jpg"
+    ],
+    "clips": [
+      "v1"
+    ]
+  },
+  {
+    "slug": "bmw-f11",
+    "make": "BMW",
+    "model": "F11",
+    "what": "Full detail: lakier, dekontaminacja i wnętrze",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg"
+    ],
+    "clips": [
+      "v1"
+    ]
+  },
+  {
+    "slug": "bmw-f45",
+    "make": "BMW",
+    "model": "F45",
+    "what": "Kompleksowa metamorfoza",
+    "photos": [
+      "01.jpg",
+      "02.jpg"
+    ],
+    "clips": [
+      "v1",
+      "v2",
+      "v3"
+    ]
+  },
+  {
+    "slug": "audi-a6",
+    "make": "Audi",
+    "model": "A6 C7",
+    "what": "",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg"
+    ],
+    "clips": [
+      "v1"
+    ]
+  },
+  {
+    "slug": "audi-a3",
+    "make": "Audi",
+    "model": "A3 8P",
+    "what": "Czyszczenie, impregnacja i zabezpieczenie skórzanych foteli",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg",
+      "04.jpg",
+      "05.jpg"
+    ],
+    "clips": [
+      "v1",
+      "v2"
+    ]
+  },
+  {
+    "slug": "ford-raptor",
+    "make": "Ford",
+    "model": "Raptor",
+    "what": "Detailing zewnętrzny i pielęgnacja wnętrza",
+    "photos": [
+      "01.jpg",
+      "02.jpg"
+    ],
+    "clips": [
+      "v1"
+    ]
+  },
+  {
+    "slug": "kia-optima",
+    "make": "Kia",
+    "model": "Optima",
+    "what": "",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg"
+    ],
+    "clips": [
+      "v1",
+      "v2"
+    ]
+  },
+  {
+    "slug": "kia-sportage-gt",
+    "make": "Kia",
+    "model": "Sportage GT-Line",
+    "what": "",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg",
+      "04.jpg",
+      "05.jpg",
+      "06.jpg"
+    ],
+    "clips": []
+  },
+  {
+    "slug": "kia-sportage",
+    "make": "Kia",
+    "model": "Sportage",
+    "what": "",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg",
+      "04.jpg"
+    ],
+    "clips": []
+  },
+  {
+    "slug": "alfa-giulietta",
+    "make": "Alfa Romeo",
+    "model": "Giulietta",
+    "what": "",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg",
+      "04.jpg",
+      "05.jpg"
+    ],
+    "clips": []
+  },
+  {
+    "slug": "ssangyong-tivoli",
+    "make": "SsangYong",
+    "model": "Tivoli",
+    "what": "",
+    "photos": [
+      "01.jpg",
+      "02.jpg",
+      "03.jpg",
+      "04.jpg"
+    ],
+    "clips": []
+  }
+]

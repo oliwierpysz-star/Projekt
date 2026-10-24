@@ -1,0 +1,100 @@
+---
+// Close-up of one job: every clip and photo he has of it in one strip you swipe or drag through,
+// the work done, and the way to a quote. Opened by any element with data-case-open="<slug>".
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import '@fontsource/knewave/latin-ext.css';
+import '@fontsource/knewave/latin.css';
+
+interface Job { slug: string; make: string; model: string; what: string; photos: string[]; clips: string[] }
+const { job } = Astro.props as { job: Job };
+const all = import.meta.glob<{ default: ImageMetadata }>('../assets/jobs/*/*.jpg', { eager: true });
+const pic = (f: string) => all[`../assets/jobs/${job.slug}/${f}`].default;
+const count = job.clips.length + job.photos.length;
+---
+<dialog class="case" data-case={job.slug} aria-label={`${job.make} ${job.model}, realizacja`}>
+  <div class="case__in">
+    <header class="case__head">
+      <div>
+        <p class="case__top">Realizacja · Peak Class Detail</p>
+        <h3 class="case__name">{job.make} <em>{job.model}</em></h3>
+        {job.what && <p class="case__what">{job.what}</p>}
+      </div>
+      <button class="case__close act" type="button" data-case-close>Zamknij <span aria-hidden="true">✕</span></button>
+    </header>
+
+    <div class="case__strip" data-case-strip tabindex="0" aria-label="Zdjęcia i filmy">
+      {job.clips.map((c) => (
+        <figure class="case__item case__item--clip">
+          <video controls playsinline loop muted preload="none" poster={`/jobs/${job.slug}/${c}.webp`} data-case-src={`/jobs/${job.slug}/${c}.mp4`}></video>
+        </figure>
+      ))}
+      {job.photos.map((p, i) => (
+        <figure class="case__item">
+          <Image src={pic(p)} alt={`${job.make} ${job.model}, zdjęcie ${i + 1}`} widths={[480, 800, 1100]} sizes="(max-width: 760px) 78vw, 46svh" loading="lazy" />
+        </figure>
+      ))}
+    </div>
+
+    <footer class="case__foot">
+      {count > 1 && (
+        <div class="case__nav">
+          <button type="button" class="case__arr" data-case-prev aria-label="Poprzednie">←</button>
+          <span class="case__count"><b data-case-i>1</b> / {count}</span>
+          <button type="button" class="case__arr" data-case-next aria-label="Następne">→</button>
+        </div>
+      )}
+      <div class="case__acts">
+        <a class="act act--accent" href="/#wycena" data-case-go>Chcę tak samo: darmowa wycena <span class="arr" aria-hidden="true">→</span></a>
+        <a class="phone" href="tel:+48881265265">881 265 265</a>
+      </div>
+    </footer>
+  </div>
+</dialog>
+
+<style>
+  .case { padding: 0; border: 0; background: transparent; color: var(--ink); max-width: none; max-height: none; width: 100%; height: 100%; }
+  .case::backdrop { background: rgba(3, 4, 6, 0.9); }
+  .case[open] { display: grid; place-items: center; }
+  .case__in {
+    display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: clamp(0.9rem, 2.2vh, 1.6rem);
+    width: min(96rem, 94vw); height: min(56rem, 92svh); padding: clamp(1.1rem, 2.4vw, 2.4rem) 0;
+    background: radial-gradient(70% 60% at 15% 10%, rgba(91, 140, 255, 0.1), transparent 70%), var(--bg-2);
+    box-shadow: 0 0 0 1px var(--hair), 0 60px 120px -40px rgba(0, 0, 0, 0.9);
+    animation: case-in 0.6s var(--ease);
+  }
+  @keyframes case-in { from { opacity: 0; transform: translateY(24px) scale(0.98); } }
+  .case__head, .case__foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 1rem 2rem; padding: 0 clamp(1.1rem, 2.4vw, 2.4rem); }
+  .case__head { align-items: flex-start; }
+  .case__top { font-size: 0.78rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  .case__name { margin-top: 0.4rem; font-family: 'Knewave', sans-serif; text-transform: uppercase; font-size: clamp(2.2rem, 4.6vw, 4.6rem); line-height: 0.9; transform: rotate(-3deg); transform-origin: 0 100%; }
+  .case__name em { font-style: normal; color: var(--accent); font-size: 0.5em; }
+  .case__what { margin-top: 0.7rem; color: var(--mute); max-width: 48ch; }
+  .case__close { font-size: 0.95rem; }
+
+  /* every clip and photo in one row: native scroll with snap, plus drag and arrows */
+  .case__strip {
+    display: flex; gap: clamp(0.6rem, 1.2vw, 1.1rem); overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scroll-padding-inline: clamp(1.1rem, 2.4vw, 2.4rem);
+    padding: 0 clamp(1.1rem, 2.4vw, 2.4rem); scrollbar-width: none; cursor: grab; min-height: 0;
+  }
+  .case__strip::-webkit-scrollbar { display: none; }
+  .case__strip.is-drag { cursor: grabbing; scroll-snap-type: none; }
+  .case__strip.is-drag img { pointer-events: none; }
+  .case__item { margin: 0; flex: 0 0 auto; height: 100%; scroll-snap-align: start; background: #000; }
+  .case__item img, .case__item video { display: block; height: 100%; width: auto; max-width: 78vw; object-fit: cover; }
+  .case__item img { aspect-ratio: 4 / 5; }
+  .case__item video:focus { outline: none; }
+
+  .case__nav { display: flex; align-items: center; gap: 1rem; }
+  .case__arr { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--hair); font-size: 1.05rem; transition: border-color 0.3s, background 0.3s; }
+  .case__arr:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .case__count { font-variant-numeric: tabular-nums; color: var(--mute); min-width: 4.5ch; text-align: center; }
+  .case__count b { color: var(--ink); }
+  .case__acts { display: flex; flex-wrap: wrap; align-items: baseline; gap: 1rem 2rem; font-size: 1.05rem; }
+
+  @media (max-width: 760px) {
+    .case__in { width: 100%; height: 100%; }
+    .case__item img, .case__item video { max-width: 84vw; }
+  }
+</style>

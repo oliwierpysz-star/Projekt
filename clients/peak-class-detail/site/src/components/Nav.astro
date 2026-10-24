@@ -1,4 +1,7 @@
 ---
+// on a subpage the links lead back to the home page sections; `current` marks that page in the menu
+const { home = true, current = '' } = Astro.props as { home?: boolean; current?: string };
+const pre = home ? '' : '/';
 const links = [
   { href: '#jak', label: 'Jak to działa' },
   { href: '#uslugi', label: 'Usługi i ceny' },
@@ -10,19 +13,19 @@ const links = [
 ---
 <header class="nav" data-nav>
   <div class="nav__in">
-    <a class="nav__mark" href="#top" aria-label="Peak Class Detail, początek strony">
+    <a class="nav__mark" href={home ? '#top' : '/'} aria-label="Peak Class Detail, początek strony">
       <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 9h28L20 33z" /></svg>
       <span>Peak Class</span>
     </a>
     <nav class="nav__links" aria-label="Główna">
-      {links.map((l) => <a href={l.href} data-navlink>{l.label}</a>)}
+      {links.map((l) => <a href={pre + l.href} data-navlink aria-current={current === l.href ? 'true' : undefined}>{l.label}</a>)}
     </nav>
     <a class="nav__tel phone" href="tel:+48881265265">881 265 265</a>
     <button class="nav__menu" type="button" aria-expanded="false" aria-controls="menu" data-menu-btn>Menu</button>
   </div>
   <div class="menu" id="menu" hidden data-menu>
     <nav aria-label="Menu">
-      {links.map((l) => <a class="display" href={l.href} data-navlink>{l.label}</a>)}
+      {links.map((l) => <a class="display" href={pre + l.href} data-navlink aria-current={current === l.href ? 'true' : undefined}>{l.label}</a>)}
     </nav>
     <a class="menu__tel phone" href="tel:+48881265265">881 265 265</a>
     <p class="caption">Śląsk i Małopolska · door to door</p>

@@ -3,6 +3,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { initHeroGL } from './hero-gl';
 import { initPolishGL } from './polish-gl';
+import { initCases } from './cases';
 
 gsap.registerPlugin(ScrollTrigger);
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -304,26 +305,9 @@ if (track) {
   });
   track.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
 
-  // close-up of a job: his clip plays, the page underneath stops
-  const cases = $$<HTMLDialogElement>('[data-case]');
-  const close = (d: HTMLDialogElement) => d.close();
-  cases.forEach((d) => {
-    const v = $<HTMLVideoElement>('video', d)!;
-    d.addEventListener('close', () => { v.pause(); open = false; lenis?.start(); pause(1500); });
-    d.addEventListener('click', (e) => { if (e.target === d) close(d); }); // click on the dimmed backdrop
-    $('[data-case-close]', d)!.addEventListener('click', () => close(d));
-    $('[data-case-go]', d)!.addEventListener('click', () => close(d));
-  });
-  $$<HTMLButtonElement>('[data-case-open]', track).forEach((b) => b.addEventListener('click', () => {
-    const d = cases[Number(b.dataset.caseOpen)];
-    if (!d) return;
-    const v = $<HTMLVideoElement>('video', d)!;
-    if (!v.src) v.src = v.dataset.caseSrc!;
-    open = true; lenis?.stop();
-    d.showModal();
-    v.muted = true;
-    v.play().catch(() => {});
-  }));
+  // close-ups of jobs: the page underneath and the drift stop while one is open
+  initCases({ onOpen: () => { open = true; lenis?.stop(); }, onClose: () => { open = false; lenis?.start(); pause(1500); } });
+
   const vids = $$<HTMLVideoElement>('video[data-src]');
   const vio = new IntersectionObserver((entries) => entries.forEach((e) => {
     const v = e.target as HTMLVideoElement;
