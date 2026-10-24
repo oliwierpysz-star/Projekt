@@ -68,7 +68,9 @@ for (const v of variants) {
   }
   const cut = `../source/hero/cutout-${v.src}.png`;
   if (existsSync(cut)) {
-    await sharp(cut).resize(2560, 1440, { fit: 'fill' }).ensureAlpha().png().toFile(`${dir}/mask-desktop.png`); // only its alpha is used
+    // only the alpha is used: black RGB + the cut-out's alpha keeps the file small
+    const alpha = await sharp(cut).resize(2560, 1440, { fit: 'fill' }).ensureAlpha().extractChannel(3).toBuffer();
+    await sharp({ create: { width: 2560, height: 1440, channels: 3, background: '#000' } }).joinChannel(alpha).png({ compressionLevel: 9, palette: false }).toFile(`${dir}/mask-desktop.png`);
     console.log(v.id, 'mask ok');
   }
 }
