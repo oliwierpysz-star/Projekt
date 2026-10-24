@@ -1,19 +1,22 @@
 ---
-// His clips in phone-shaped frames, plus where to follow him.
-const clips = ['s5-paint', 'optima', 'raptor', 'a3', 'optima-rear'];
+// His clips as plain tiles next to the stats and links; fits one screen. TikTok leads: it is his main channel.
+// To swap in his POV TikToks: put them in public/media/social/ (mp4 + webp poster) and list them here.
+const clips = ['s5-paint', 'raptor', 'a3'];
+const tiktok = 'https://www.tiktok.com/@peakclassdetail';
 const links = [
+  { name: 'TikTok', handle: '@peakclassdetail', href: tiktok },
   { name: 'Instagram', handle: '@peakclassdetail', href: 'https://www.instagram.com/peakclassdetail/' },
-  { name: 'TikTok', handle: '@peakclassdetail', href: 'https://www.tiktok.com/@peakclassdetail' },
   { name: 'Facebook', handle: 'Peak Class Detail', href: 'https://www.facebook.com/profile.php?id=100092608838944' },
 ];
 ---
 <section class="social" id="social">
-  <div class="wrap social__head">
-    <h2 class="display h2 rise">
-      <span class="ln"><span>Patrzysz</span></span>
-      <span class="ln"><span>nam na <em>ręce.</em></span></span>
-    </h2>
-    <div class="social__side">
+  <div class="wrap social__grid">
+    <div class="social__copy">
+      <h2 class="display social__title rise">
+        <span class="ln"><span>Patrzysz</span></span>
+        <span class="ln"><span>nam na <em>ręce.</em></span></span>
+      </h2>
+      <p class="lead rise-fade">Na TikToku pokazujemy naszą robotę od środka, od brudnego auta do ostatniego przetarcia.</p>
       <dl class="social__stats rise-fade">
         <div><dt class="display"><span data-count="50">50</span> tys.</dt><dd>osób śledzi naszą pracę</dd></div>
         <div><dt class="display"><span data-count="1000">1000</span>+</dt><dd>aut przeszło przez nasze ręce</dd></div>
@@ -28,37 +31,44 @@ const links = [
         ))}
       </ul>
     </div>
-  </div>
 
-  <div class="social__phones" data-phones>
-    {clips.map((c, i) => (
-      <a class="phonef" href={links[i % 2].href} target="_blank" rel="noopener" aria-label={`Film na ${links[i % 2].name}`} data-phone>
-        <video muted loop playsinline preload="none" poster={`/media/social/${c}.webp`} data-src={`/media/social/${c}.mp4`}></video>
-      </a>
-    ))}
+    <div class="social__clips">
+      {clips.map((c) => (
+        <a class="clip sweep" href={tiktok} target="_blank" rel="noopener" aria-label="Film na TikToku" data-strip>
+          <video muted loop playsinline preload="none" poster={`/media/social/${c}.webp`} data-src={`/media/social/${c}.mp4`}></video>
+        </a>
+      ))}
+    </div>
   </div>
 </section>
 
 <style>
-  .social { padding: clamp(5.625rem, 14vh, 10.625rem) 0; background: linear-gradient(180deg, var(--bg), var(--bg-2)); overflow: hidden; }
-  .social__head { display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem 4rem; align-items: end; }
-  .social__side { display: grid; gap: 2rem; }
+  .social {
+    min-height: 100svh; display: grid; align-items: center;
+    padding: clamp(5.5rem, 12vh, 8rem) 0 clamp(2.5rem, 7vh, 5rem);
+    background: linear-gradient(180deg, var(--bg), var(--bg-2)); overflow: hidden;
+  }
+  .social__grid { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 5.5rem); align-items: center; }
+  .social__title { font-size: clamp(2.2rem, 5.2vw, 5.4rem); }
+  .social__copy { display: grid; gap: clamp(1.1rem, 2.6vh, 1.8rem); justify-items: start; }
+  .social__copy .lead { max-width: 36ch; }
   .social__stats { margin: 0; display: flex; gap: 1rem 3rem; flex-wrap: wrap; }
-  .social__stats dt { font-size: clamp(2.2rem, 4vw, 3.8rem); font-variant-numeric: tabular-nums; }
-  .social__stats dd { margin: 0.3rem 0 0; color: var(--mute); font-size: 0.95rem; }
-  .social__links { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.9rem; }
-  .social__links .act { font-size: clamp(1.05rem, 1.4vw, 1.3rem); }
+  .social__stats dt { font-size: clamp(2rem, 3.4vw, 3.4rem); font-variant-numeric: tabular-nums; }
+  .social__stats dd { margin: 0.3rem 0 0; color: var(--mute); font-size: 0.92rem; }
+  .social__links { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.75rem; }
+  .social__links .act { font-size: clamp(1rem, 1.3vw, 1.2rem); }
   .social__name { color: var(--ink); }
   .social__handle { color: var(--mute); font-weight: 500; }
 
-  .social__phones { margin-top: clamp(3rem, 8vh, 5.5rem); display: flex; justify-content: center; gap: clamp(0.8rem, 1.6vw, 1.6rem); padding: 0 var(--gutter); }
-  .phonef {
-    position: relative; flex: 0 1 15rem; aspect-ratio: 9 / 16; border-radius: 1.4rem; overflow: hidden;
-    background: var(--bg-3); box-shadow: 0 0 0 1px rgba(233, 237, 243, 0.12), 0 40px 70px -30px rgba(0, 0, 0, 0.9);
-    transition: transform 0.5s var(--ease);
+  /* three plain 9:16 tiles, the middle one lifted */
+  .social__clips { display: flex; gap: clamp(0.6rem, 1.2vw, 1.2rem); align-items: center; }
+  .clip { flex: 1; aspect-ratio: 9 / 16; max-height: 70svh; overflow: hidden; background: var(--bg-3); box-shadow: 0 0 0 1px rgba(233, 237, 243, 0.08), 0 40px 70px -30px rgba(0, 0, 0, 0.9); }
+  .clip:nth-child(2) { transform: translateY(-7%); }
+  .clip:not(:nth-child(2)) { transform: translateY(5%); }
+  .clip video { width: 100%; height: 100%; object-fit: cover; }
+
+  @media (max-width: 860px) {
+    .social { min-height: 0; }
+    .social__grid { grid-template-columns: minmax(0, 1fr); }
   }
-  .phonef:nth-child(odd) { margin-top: 3.5rem; }
-  .phonef:hover { transform: translateY(-6px); }
-  .phonef video { width: 100%; height: 100%; object-fit: cover; }
-  .phonef::after { content: ''; position: absolute; left: 50%; top: 0.7rem; width: 28%; height: 0.45rem; margin-left: -14%; border-radius: 1rem; background: rgba(6, 8, 11, 0.8); }
 </style>

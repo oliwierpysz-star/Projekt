@@ -68,10 +68,12 @@ const rules = [
         </label>
       </div>
 
-      <div class="slip__out">
+      <!-- the summary builds itself from the slip; under it the customer writes in their own words -->
+      <label class="slip__out">
         <span class="caption">Twoja wiadomość</span>
         <p data-quote-out aria-live="polite"></p>
-      </div>
+        <textarea name="note" rows="3" placeholder="Dopisz coś od siebie, np. rysy na masce, sierść w bagażniku, plamy na fotelach…" data-quote-note></textarea>
+      </label>
 
       <div class="slip__acts">
         <a class="act act--accent" href="sms:+48881265265" data-quote-sms>Wyślij SMS <span class="arr" aria-hidden="true">→</span></a>
@@ -118,7 +120,13 @@ const rules = [
   .slip__chips--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .slip__chips .chip { padding-inline: 0.6em; font-size: 0.86rem; }
   .slip__out { padding: 1rem 1.1rem; background: rgba(6, 8, 11, 0.6); border-left: 2px solid var(--accent); display: grid; gap: 0.4rem; }
-  .slip__out p { font-size: 0.95rem; color: var(--ink); min-height: 3em; white-space: pre-line; }
+  .slip__out p { font-size: 0.95rem; color: var(--ink); white-space: pre-line; }
+  .slip__out textarea {
+    font: inherit; font-size: 0.95rem; line-height: 1.5; color: var(--ink); background: transparent; width: 100%; min-width: 0;
+    border: 0; border-top: 1px dashed var(--hair); padding: 0.6rem 0 0; resize: none; outline: none; field-sizing: content; min-height: 4.5em;
+  }
+  .slip__out textarea::placeholder { color: var(--dim); }
+  .slip__out:focus-within { border-left-color: #fff; }
   .slip__acts { display: flex; flex-wrap: wrap; gap: 1rem 2rem; font-size: 1.05rem; }
 
   .rules { grid-column: 1 / -1; color: var(--mute); }

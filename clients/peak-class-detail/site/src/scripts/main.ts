@@ -302,8 +302,10 @@ if (form) {
       city ? `Miejscowość: ${city}` : '',
       when ? `Termin: ${when}` : '',
     ].filter(Boolean);
-    const text = parts.join('\n');
-    out.textContent = text;
+    out.textContent = parts.join('\n');
+    // the customer's own words go at the end of the SMS
+    const note = val('note');
+    const text = [...parts, note].filter(Boolean).join('\n');
     sms.href = `sms:+48881265265?&body=${encodeURIComponent(text)}`;
     return text;
   };

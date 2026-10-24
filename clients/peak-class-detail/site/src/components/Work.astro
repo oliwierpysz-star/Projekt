@@ -50,9 +50,8 @@ const drips = (s: string) => [...s].slice(0, 3).map((ch, i) => ({ x: 12 + ((ch.c
           <div class="job__art">
             {cut && (
               <div class="job__wall" aria-hidden="true">
-                <span class="job__tag job__tag--1">{c.make}</span>
+                <span class="job__tag job__tag--1">{c.make}{drips(c.make).map((d) => <i style={`left:${d.x}%;--h:${d.h * 0.7}cqw`}></i>)}</span>
                 <span class="job__tag job__tag--2">{c.model}</span>
-                <span class="job__tag job__tag--3">{c.make}</span>
               </div>
             )}
             {cut && (
@@ -144,18 +143,23 @@ const drips = (s: string) => [...s].slice(0, 3).map((ch, i) => ({ x: 12 + ((ch.c
 
   /* ---- poster: one per car, his real car cut out in front ---- */
   .job--cut { flex-basis: clamp(19rem, 34vw, 33rem); position: relative; container-type: inline-size; }
-  .job--cut .job__art {
-    aspect-ratio: 3 / 4; overflow: hidden;
-    background:
-      radial-gradient(70% 45% at 50% 40%, rgba(91, 140, 255, 0.07), transparent 70%),
-      radial-gradient(90% 70% at 50% 35%, #20252e, #0d1015 72%);
+  /* no card: the poster sits straight on the section, only a soft pool of light under the car */
+  .job--cut .job__art { aspect-ratio: 3 / 4; background: radial-gradient(60% 30% at 50% 66%, rgba(91, 140, 255, 0.07), transparent 70%); }
+  /* graffiti sprayed on the wall behind: rough spray edges, overspray haze, drips; fades out at the edges so there is no box */
+  .job__wall {
+    position: absolute; inset: 0 -8%; pointer-events: none;
+    /* speckle = spray grain on the letters; radial = the wall fades out instead of ending in a box */
+    -webkit-mask-image: url(/tex/speckle.png), radial-gradient(closest-side, #000 62%, transparent);
+    mask-image: url(/tex/speckle.png), radial-gradient(closest-side, #000 62%, transparent);
+    -webkit-mask-size: 60cqw auto, 100% 100%; mask-size: 60cqw auto, 100% 100%;
+    -webkit-mask-composite: source-in; mask-composite: intersect;
   }
-  /* spray-paint tags on the wall behind everything */
-  .job__wall { position: absolute; inset: 0; pointer-events: none; -webkit-mask-image: url(/tex/speckle.png); mask-image: url(/tex/speckle.png); -webkit-mask-size: 70cqw auto; mask-size: 70cqw auto; }
-  .job__tag { position: absolute; font-family: 'Knewave', sans-serif; text-transform: uppercase; line-height: 0.8; color: rgba(233, 237, 243, 0.1); white-space: nowrap; }
-  .job__tag--1 { left: -6%; top: 6%; font-size: 30cqw; transform: rotate(-9deg); }
-  .job__tag--2 { right: -4%; top: 36%; font-size: 36cqw; transform: rotate(-6deg); color: rgba(91, 140, 255, 0.1); }
-  .job__tag--3 { left: 4%; top: 62%; font-size: 22cqw; transform: rotate(-12deg); }
+  .job__tag { position: absolute; font-family: 'Knewave', sans-serif; text-transform: uppercase; line-height: 0.8; white-space: nowrap; }
+  .job__tag i { position: absolute; top: 78%; width: 0.7cqw; height: var(--h); border-radius: 0 0 1cqw 1cqw; background: linear-gradient(180deg, currentColor 55%, transparent); }
+  /* filled piece in white paint */
+  .job__tag--1 { left: 0; top: 17%; font-size: 36cqw; transform: rotate(-9deg); color: rgba(233, 237, 243, 0.22); text-shadow: 0 0 1.4cqw rgba(233, 237, 243, 0.14), 0 0 5cqw rgba(233, 237, 243, 0.06); }
+  /* outline throw-up in the accent blue, with a hard shadow like a second colour */
+  .job__tag--2 { right: 2%; top: 40%; font-size: 40cqw; transform: rotate(-6deg); color: transparent; -webkit-text-stroke: 0.55cqw rgba(91, 140, 255, 0.5); text-shadow: 1.2cqw 1.2cqw 0 rgba(91, 140, 255, 0.1); }
 
   .job__top { position: absolute; left: 0; right: 0; top: 4.5%; z-index: 2; display: grid; justify-items: center; gap: 0.5cqw; text-transform: uppercase; letter-spacing: 0.32em; font-size: 2.7cqw; }
   .job__top b { color: var(--accent); font-weight: 700; }
