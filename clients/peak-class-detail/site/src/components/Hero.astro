@@ -39,7 +39,7 @@ const masks = readdirSync('public/hero').filter((v) => existsSync(`public/hero/$
   </div>
   <div class="pick" hidden data-hero-pick>
     <span>Wersja hero</span>
-    <a href="?hero=a">A</a><a href="?hero=b">B</a><a href="?hero=c">C</a><a href="?hero=d">D</a><a href="?hero=e">E</a>
+    <a href="?hero=a">A</a><a href="?hero=b">B</a><a href="?hero=c">C</a><a href="?hero=d">D</a><a href="?hero=e">E</a><a href="?hero=f">F</a>
   </div>
 </section>
 
@@ -60,15 +60,17 @@ const masks = readdirSync('public/hero').filter((v) => existsSync(`public/hero/$
   .hero__front { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
   .hero.has-front .hero__front { display: block; }
 
-  /* variant E: title set big across the top, car in front of it; lead and actions at the bottom */
-  .hero--e .hero__copy { top: 13vh; bottom: 6vh; }
-  .hero--e .hero__state--a, .hero--e .hero__state--b { position: absolute; inset: 0 var(--gutter); }
-  .hero--e .hero__state--b { display: flex; flex-direction: column; }
-  .hero--e .hero__title { font-size: clamp(3rem, 10.4vw, 12rem); line-height: 0.88; }
-  .hero--e .hero__title .ln:last-child { padding-left: 0.32em; }
-  .hero--e .hero__lead { margin-top: auto; }
-  .hero--e .hero__cue { position: absolute; left: 0; bottom: 0; }
-  .hero--e .hero__shade {
+  /* variants E and F: title set big across the top, car in front of it; lead and actions at the bottom */
+  :is(.hero--e, .hero--f) .hero__copy { top: 13vh; bottom: 6vh; }
+  .hero--f .hero__copy { top: 17vh; }
+  :is(.hero--e, .hero--f) .hero__state--a, :is(.hero--e, .hero--f) .hero__state--b { position: absolute; inset: 0 var(--gutter); }
+  :is(.hero--e, .hero--f) .hero__state--b { display: flex; flex-direction: column; }
+  /* capped so the title keeps the same share of the content width on 1920 and 4K (no cut-off dot) */
+  :is(.hero--e, .hero--f) .hero__title { font-size: clamp(3rem, 10.4vw, 9.4rem); line-height: 0.88; }
+  :is(.hero--e, .hero--f) .hero__title .ln:last-child { padding-left: 0.32em; }
+  :is(.hero--e, .hero--f) .hero__lead { margin-top: auto; }
+  :is(.hero--e, .hero--f) .hero__cue { position: absolute; left: 0; bottom: 0; }
+  :is(.hero--e, .hero--f) .hero__shade {
     background:
       linear-gradient(180deg, rgba(6, 8, 11, 0.7) 0%, rgba(6, 8, 11, 0.25) 40%, transparent 60%),
       linear-gradient(0deg, var(--bg) 0%, rgba(6, 8, 11, 0.5) 16%, transparent 34%);

@@ -11,6 +11,15 @@ const wa = `https://wa.me/48881265265?text=${encodeURIComponent('Dzień dobry, p
 ---
 <div class="route" data-route>
   <div class="route__in wrap">
+    <!-- one picture per step; each new one is wiped in by the same LED bar as the hero -->
+    <div class="route__shots" aria-hidden="true">
+      {stops.map((_, i) => (
+        <div class="route__shot" data-shot>
+          <img src={`/route/${i + 1}-900.webp`} srcset={`/route/${i + 1}-480.webp 480w, /route/${i + 1}-900.webp 900w`} sizes="(max-width: 760px) 40vw, 34vw" alt="" width="900" height="1200" loading="lazy" decoding="async" />
+          <span class="route__bar"></span>
+        </div>
+      ))}
+    </div>
     <div class="route__head">
       <h2 class="display h2" id="route-title">Ty nigdzie<br />nie <em>jedziesz.</em></h2>
       <p class="lead">Detailing door to door na terenie całego Śląska i Małopolski. Cała robota dzieje się po naszej stronie.</p>
@@ -56,8 +65,23 @@ const wa = `https://wa.me/48881265265?text=${encodeURIComponent('Dzień dobry, p
     transform: translateX(100%);
     box-shadow: -40px 0 80px rgba(0, 0, 0, 0.6);
   }
-  .route__in { height: 100%; display: grid; grid-template-rows: auto 1fr auto; padding-top: clamp(5.5rem, 13vh, 9rem); padding-bottom: clamp(2rem, 7vh, 5rem); }
-  .route__head { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2rem; align-items: end; }
+  .route__in {
+    --shot-h: calc(100svh - clamp(5.5rem, 13vh, 9rem) - clamp(2rem, 7vh, 5rem));
+    height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto 1fr auto; column-gap: clamp(2rem, 4vw, 4.5rem);
+    padding-top: clamp(5.5rem, 13vh, 9rem); padding-bottom: clamp(2rem, 7vh, 5rem);
+  }
+  .route__head { grid-column: 1; display: grid; gap: 1.2rem; }
+  .route__map, .route__cta { grid-column: 1; }
+
+  /* tall frame on the right: the photos stack, the newest wipes in over the last */
+  .route__shots { grid-column: 2; grid-row: 1 / -1; position: relative; height: var(--shot-h); aspect-ratio: 3 / 4; max-width: 34vw; overflow: hidden; background: var(--bg-3); box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(233, 237, 243, 0.08); }
+  .route__shot { position: absolute; inset: 0; clip-path: inset(0 100% 0 0); transition: clip-path 1.1s var(--ease); }
+  .route__shot img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); transition: transform 1.6s var(--ease); }
+  .route__shot.is-on { clip-path: inset(0 0 0 0); }
+  .route__shot.is-on img { transform: none; }
+  .route__bar { position: absolute; top: 0; bottom: 0; left: 0; width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 18px 4px rgba(190, 210, 255, 0.7), 0 0 60px 12px rgba(91, 140, 255, 0.35); opacity: 0; transition: left 1.1s var(--ease), opacity 0.4s 0.7s; }
+  .route__shot.is-on .route__bar { left: 100%; opacity: 0; animation: bar 1.1s var(--ease); }
+  @keyframes bar { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
 
   .route__map { position: relative; margin: 2rem 0; min-height: 15rem; }
   .route__svg { position: absolute; left: 0; right: 0; top: 50%; width: 100%; height: 34%; transform: translateY(-50%); overflow: visible; }
@@ -94,5 +118,6 @@ const wa = `https://wa.me/48881265265?text=${encodeURIComponent('Dzień dobry, p
   @media (prefers-reduced-motion: reduce) {
     .route { position: relative; transform: none; box-shadow: none; }
     .route__text, .route__cta { opacity: 1; transform: none; }
+    .route__shot:last-child { clip-path: none; }
   }
 </style>

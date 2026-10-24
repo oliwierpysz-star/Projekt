@@ -11,6 +11,7 @@ const variants = [
   { id: 'c', src: 'aventador', fx: 0.645, shift: [5, 0] },
   { id: 'd', src: '12', fx: 0.54, shift: [5, -5] },
   { id: 'e', src: 'se', fx: 0.5, shift: [0, -5], scale: 0.995 },
+  { id: 'f', src: 'se2', fx: 0.44, shift: [5, -5], scale: 0.995 },
 ];
 
 // move the dirty image back onto the clean one, filling the edge with copied pixels

@@ -73,9 +73,9 @@ const hero = $('[data-hero]')!;
 const heroA = $('[data-hero-a]')!;
 const heroB = $('[data-hero-b]')!;
 const heroState = { wash: 0 };
-// Hero variants for the client to choose from: ?hero=a|b|c|d (the choice is remembered on this device)
+// Hero variants for the client to choose from: ?hero=a…f (the choice is remembered on this device)
 const params = new URLSearchParams(location.search);
-const VARIANTS = ['a', 'b', 'c', 'd', 'e'];
+const VARIANTS = ['a', 'b', 'c', 'd', 'e', 'f'];
 let variant = 'a';
 try { variant = params.get('hero') || sessionStorage.getItem('hero') || 'a'; } catch { variant = params.get('hero') || 'a'; }
 if (!VARIANTS.includes(variant)) variant = 'a';
@@ -103,6 +103,7 @@ if (!reduced) {
   const routeDraw = $<SVGSVGElement>('[data-route-draw]', route)!;
   const stops = $$<HTMLElement>('[data-stop]', route);
   const cta = $('[data-route-cta]', route)!;
+  const shots = $$<HTMLElement>('[data-shot]', route);
   const len = routePath.getTotalLength();
   // place the stops on the curve (the svg stretches, so map viewBox units to pixels)
   const placeStops = () => {
@@ -129,7 +130,12 @@ if (!reduced) {
       routeDraw.style.clipPath = `inset(-30px ${Math.max(0, 100 - ((pt.x - (sb.left - mb.left)) / sb.width) * 100)}% -30px 0)`;
       routeLight.style.transform = `translate(${pt.x}px, ${pt.y}px)`;
       routeLight.style.opacity = p > 0.5 && p < 0.995 ? '1' : '0';
-      stops.forEach((st) => st.classList.toggle('is-on', r >= Number(st.dataset.t) - 0.01));
+      stops.forEach((st, i) => {
+        const on = r >= Number(st.dataset.t) - 0.01;
+        st.classList.toggle('is-on', on);
+        // the first picture is already there as the scene slides in
+        shots[i]?.classList.toggle('is-on', i === 0 ? p >= 0.4 : on);
+      });
       cta.classList.toggle('is-on', r >= 0.98);
     },
   });
