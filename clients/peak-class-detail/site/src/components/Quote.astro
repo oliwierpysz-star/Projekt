@@ -89,9 +89,11 @@ const rules = [
 </section>
 
 <style>
-  .quote { padding: clamp(5.625rem, 14vh, 10.625rem) 0 clamp(4.375rem, 10vh, 7.5rem); background: linear-gradient(180deg, var(--bg), var(--bg-3) 55%, var(--bg-2)); }
+  .quote { padding: clamp(5.625rem, 14vh, 10.625rem) 0 clamp(4.375rem, 10vh, 7.5rem); }
   .quote__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: clamp(2rem, 5vw, 6rem); align-items: start; }
-  .quote__head { position: relative; }
+  .quote__head { position: relative; container-type: inline-size; }
+  /* the title never runs past its column ("DARMOWA" is the long word) */
+  .quote__head .h2 { font-size: min(clamp(2.2rem, 6.4vw, 6.2rem), 14cqw); }
   .quote__head .lead { margin-top: 1.4rem; }
   .quote__direct { margin-top: 2.4rem; display: grid; gap: 1rem; justify-items: start; }
   .quote__tel { font-size: clamp(1.8rem, 3.4vw, 3rem); font-stretch: 118%; font-weight: 750; }

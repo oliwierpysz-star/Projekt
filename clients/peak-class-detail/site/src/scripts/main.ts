@@ -215,17 +215,20 @@ if (polish && !reduced) {
   let pp = 0;
   const words = $$('.w', polish);
   const before = $('[data-polish-before]', polish)!, after = $('[data-polish-after]', polish)!;
-  const leads = $$('[data-polish-lead]', polish);
+  const stepsList = $('[data-polish-steps]', polish)!;
+  const steps = $$<HTMLElement>('li', stepsList);
   ScrollTrigger.create({
     trigger: polish, start: 'top top', end: 'bottom bottom', scrub: true,
     onUpdate: (s) => {
       pp = s.progress;
-      words.forEach((w, i) => w.classList.toggle("is-lit", pp > 0.1 + i * 0.35));
+      words.forEach((w, i) => w.classList.toggle("is-lit", pp > 0.04 + i * 0.3));
       before.style.opacity = String(pp < 0.86 ? 1 : 0);
       after.style.opacity = String(pp < 0.86 ? 0 : 1);
+      // stages light up with the spreading correction; the rule fills between them
+      steps.forEach((li) => li.classList.toggle('is-on', pp >= Number(li.dataset.at)));
+      stepsList.style.setProperty('--fill', String(Math.min(1, Math.max(0, (pp - 0.12) / 0.7))));
     },
   });
-  gsap.to(leads, { opacity: 1, y: 0, stagger: 0.08, ease: 'none', scrollTrigger: { trigger: polish, start: '88% bottom', end: '97% bottom', scrub: 0.5 } });
   initPolishGL($<HTMLCanvasElement>('[data-polish-gl]', polish)!, () => pp)
     .then((ok) => { if (ok) polish.classList.add('is-gl'); })
     .catch(() => {});
@@ -234,44 +237,93 @@ if (polish && !reduced) {
 /* Realizacje: native scroll-snap + arrows, counter, mouse drag, lazy video */
 const track = $('[data-work-track]');
 if (track) {
-  const items = $$('[data-poster]', track);
+  // Realizacje: an endless row that drifts slowly on its own. Three copies of the posters; the drift
+  // stays inside the middle copy and wraps by one copy width, so the jump is invisible.
+  // Hover, drag, swipe, the wheel or an open close-up pause it; it picks up again a moment later.
+  const items = $$<HTMLElement>('[data-poster]', track);
+  const n = items.length / 3;
   const idx = $('[data-work-i]')!;
   const prev = $<HTMLButtonElement>('[data-work-prev]')!;
   const next = $<HTMLButtonElement>('[data-work-next]')!;
-  const step = () => (items[1] ? (items[1] as HTMLElement).offsetLeft - (items[0] as HTMLElement).offsetLeft : track.clientWidth);
-  const update = () => {
-    const i = Math.min(items.length - 1, Math.round(track.scrollLeft / step()));
-    idx.textContent = String(i + 1);
-    prev.disabled = track.scrollLeft < 8;
-    next.disabled = track.scrollLeft > track.scrollWidth - track.clientWidth - 8;
+  const step = () => items[1].offsetLeft - items[0].offsetLeft;
+  const loop = () => items[n].offsetLeft - items[0].offsetLeft;
+  // the drift's home: first poster of the middle copy lined up with the page's left text edge
+  const head = $('.work__head')!;
+  const edge = () => head.getBoundingClientRect().left + parseFloat(getComputedStyle(head).paddingLeft);
+  const origin = () => items[n].offsetLeft - items[0].offsetLeft - edge();
+  let pos = 0, hold = 0, hover = false, open = false, seen = false, last = performance.now();
+  const wrap = () => {
+    const L = loop(), o = origin();
+    if (track.scrollLeft < o - 1) track.scrollLeft += L;
+    else if (track.scrollLeft >= o + L) track.scrollLeft -= L;
   };
-  track.addEventListener('scroll', update, { passive: true });
-  prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
-  next.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
-  update();
+  const start = () => { track.scrollLeft = origin(); pos = track.scrollLeft; };
+  start();
+  addEventListener('resize', start);
+  const pause = (ms = 2600) => { hold = performance.now() + ms; };
+  const speed = matchMedia('(pointer: coarse)').matches ? 16 : 22; // px per second
+  const tick = (t: number) => {
+    const dt = Math.min(0.05, (t - last) / 1000); last = t;
+    if (seen && !hover && !open && !reduced && t > hold) {
+      pos += speed * dt;
+      track.scrollLeft = pos;
+      if (Math.abs(track.scrollLeft - pos) > 2) pos = track.scrollLeft; // browser rounded or clamped it
+    } else pos = track.scrollLeft;
+    wrap();
+    pos = Math.abs(pos - track.scrollLeft) > 2 ? track.scrollLeft : pos;
+    const i = ((Math.round((track.scrollLeft - origin()) / step()) % n) + n) % n;
+    idx.textContent = String(i + 1);
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+  new IntersectionObserver(([e]) => { seen = e.isIntersecting; }).observe(track);
+  track.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') hover = true; });
+  track.addEventListener('pointerleave', () => { hover = false; pause(800); });
+  ['wheel', 'touchstart', 'keydown', 'focusin'].forEach((ev) => track.addEventListener(ev, () => pause(), { passive: true }));
+  const go = (dir: number) => { pause(3200); wrap(); track.scrollTo({ left: track.scrollLeft + dir * step(), behavior: 'smooth' }); };
+  prev.addEventListener('click', () => go(-1));
+  next.addEventListener('click', () => go(1));
 
+  // mouse drag (touch scrolls natively)
   let down = false, sx = 0, sl = 0, moved = false;
   track.addEventListener('pointerdown', (e) => {
     if (e.pointerType !== 'mouse') return;
-    down = true; moved = false; sx = e.clientX; sl = track.scrollLeft;
+    down = true; moved = false; sx = e.clientX; sl = track.scrollLeft; pause(3000);
   });
   addEventListener('pointermove', (e) => {
     if (!down) return;
     const dx = e.clientX - sx;
     if (Math.abs(dx) > 4) { moved = true; track.classList.add('is-drag'); }
     track.scrollLeft = sl - dx;
+    pause(2600);
   });
   addEventListener('pointerup', () => {
     if (!down) return;
     down = false;
     track.classList.remove('is-drag');
-    if (moved) {
-      const i = Math.round(track.scrollLeft / step());
-      track.scrollTo({ left: i * step(), behavior: 'smooth' });
-    }
   });
   track.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; } }, true);
 
+  // close-up of a job: his clip plays, the page underneath stops
+  const cases = $$<HTMLDialogElement>('[data-case]');
+  const close = (d: HTMLDialogElement) => d.close();
+  cases.forEach((d) => {
+    const v = $<HTMLVideoElement>('video', d)!;
+    d.addEventListener('close', () => { v.pause(); open = false; lenis?.start(); pause(1500); });
+    d.addEventListener('click', (e) => { if (e.target === d) close(d); }); // click on the dimmed backdrop
+    $('[data-case-close]', d)!.addEventListener('click', () => close(d));
+    $('[data-case-go]', d)!.addEventListener('click', () => close(d));
+  });
+  $$<HTMLButtonElement>('[data-case-open]', track).forEach((b) => b.addEventListener('click', () => {
+    const d = cases[Number(b.dataset.caseOpen)];
+    if (!d) return;
+    const v = $<HTMLVideoElement>('video', d)!;
+    if (!v.src) v.src = v.dataset.caseSrc!;
+    open = true; lenis?.stop();
+    d.showModal();
+    v.muted = true;
+    v.play().catch(() => {});
+  }));
   const vids = $$<HTMLVideoElement>('video[data-src]');
   const vio = new IntersectionObserver((entries) => entries.forEach((e) => {
     const v = e.target as HTMLVideoElement;

@@ -10,12 +10,19 @@
     <div class="polish__shade" aria-hidden="true"></div>
 
     <div class="polish__copy wrap">
-      <p class="polish__state caption" aria-hidden="true"><span data-polish-before>Przed korektą</span><span data-polish-after>Po korekcie</span></p>
-      <h2 class="display polish__title" data-polish-title>
-        <span class="w">Rysy</span> <span class="w"><em>znikają.</em></span>
-      </h2>
-      <p class="polish__lead" data-polish-lead>Hologramy i zarysowania widać dopiero pod lampą. Maszynowa korekta lakieru usuwa je warstwa po warstwie, a powłoka ceramiczna utrwala efekt.</p>
-      <a class="act act--accent" href="#uslugi" data-polish-lead>Korekta lakieru od 1000 zł <span class="arr" aria-hidden="true">→</span></a>
+      <div class="polish__head">
+        <p class="polish__state caption" aria-hidden="true"><span data-polish-before>Przed korektą</span><span data-polish-after>Po korekcie</span></p>
+        <h2 class="display polish__title" data-polish-title>
+          <span class="w">Rysy</span> <span class="w"><em>znikają.</em></span>
+        </h2>
+      </div>
+      <!-- the three stages light up one by one while the corrected paint spreads; the rule fills with them -->
+      <ol class="polish__steps" data-polish-steps>
+        <li data-at="0.12"><h3>Pod lampą</h3><p>Hologramy i zarysowania widać dopiero w mocnym świetle.</p></li>
+        <li data-at="0.42"><h3>Korekta maszynowa</h3><p>Usuwamy je warstwa po warstwie.</p></li>
+        <li data-at="0.72"><h3>Powłoka ceramiczna</h3><p>Utrwala efekt na długo.</p></li>
+        <li class="polish__cta" data-at="0.88"><a class="act act--accent" href="#uslugi">Korekta lakieru od 1000 zł <span class="arr" aria-hidden="true">→</span></a></li>
+      </ol>
     </div>
   </div>
 </section>
@@ -33,15 +40,30 @@
       linear-gradient(180deg, var(--bg) 0%, transparent 18%),
       linear-gradient(0deg, var(--bg) 0%, rgba(6, 8, 11, 0.6) 22%, transparent 50%);
   }
-  .polish__copy { position: absolute; left: 0; right: 0; bottom: clamp(2rem, 8vh, 6rem); display: grid; justify-items: start; gap: 1.1rem; }
+  .polish__copy { position: absolute; left: 0; right: 0; top: clamp(5.5rem, 13vh, 8rem); bottom: clamp(2rem, 8vh, 6rem); display: flex; justify-content: space-between; align-items: flex-end; gap: 3rem; }
+  .polish__head { align-self: flex-start; display: grid; gap: 0.8rem; }
   .polish__state { position: relative; height: 1.2em; }
   .polish__state span { position: absolute; left: 0; top: 0; white-space: nowrap; transition: opacity 0.4s; }
   .polish__state span:last-child { opacity: 0; color: var(--accent); }
   .polish__title { font-size: clamp(3rem, 9vw, 10rem); }
   .polish__title .w { display: inline-block; opacity: 0.16; transition: opacity 0.5s; }
   .polish__title .w.is-lit { opacity: 1; }
-  .polish__lead:not(.act) { max-width: 44ch; color: var(--mute); }
-  :global(.js) .polish [data-polish-lead] { opacity: 0; transform: translateY(14px); }
+
+  .polish__steps {
+    --fill: 0;
+    position: relative; list-style: none; margin: 0; padding: 0 0 0 1.6rem; width: min(26rem, 34vw);
+    display: grid; gap: clamp(1rem, 2.6vh, 1.6rem);
+  }
+  /* the rule beside the stages, filled up to the current one */
+  .polish__steps::before, .polish__steps::after { content: ''; position: absolute; left: 0; top: 0.4rem; bottom: 0.4rem; width: 1px; background: var(--hair); }
+  .polish__steps::after { background: var(--accent); transform-origin: top; transform: scaleY(var(--fill)); box-shadow: 0 0 12px rgba(91, 140, 255, 0.6); }
+  .polish__steps li { position: relative; opacity: 0.25; transform: translateX(10px); transition: opacity 0.5s, transform 0.7s var(--ease); }
+  .polish__steps li::before { content: ''; position: absolute; left: calc(-1.6rem - 4px); top: 0.45em; width: 9px; height: 9px; border-radius: 50%; background: var(--bg); border: 1px solid var(--dim); transition: background 0.4s, border-color 0.4s; }
+  .polish__steps li.is-on { opacity: 1; transform: none; }
+  .polish__steps li.is-on::before { background: var(--accent); border-color: var(--accent); }
+  .polish__steps h3 { font-stretch: 120%; font-weight: 800; text-transform: uppercase; font-size: clamp(1rem, 1.3vw, 1.3rem); }
+  .polish__steps p { margin-top: 0.25rem; color: var(--mute); font-size: 0.95rem; }
+  .polish__cta::before { display: none; }
 
   @media (orientation: portrait) {
     .polish__copy { top: calc(70px + 3vh); bottom: auto; }
@@ -52,13 +74,14 @@
     }
   }
   @media (max-width: 760px) {
+    .polish__copy { flex-direction: column; align-items: flex-start; justify-content: space-between; }
     .polish__title { font-size: clamp(2.4rem, 12.5vw, 3.4rem); }
-    .polish__lead:not(.act) { font-size: 0.95rem; }
+    .polish__steps { width: 100%; }
   }
   @media (prefers-reduced-motion: reduce) {
     .polish { height: auto; }
     .polish__stage { position: relative; }
     .polish__title .w { opacity: 1; }
-    :global(.js) .polish [data-polish-lead] { opacity: 1; transform: none; }
+    .polish__steps li { opacity: 1; transform: none; }
   }
 </style>
