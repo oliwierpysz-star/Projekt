@@ -86,6 +86,11 @@ const masks = readdirSync('public/hero').filter((v) => existsSync(`public/hero/$
   .hero__title { font-size: clamp(3rem, 10.5vw, 11.5rem); }
   .hero__lead { margin-top: 1.4rem; max-width: 40ch; color: var(--mute); font-size: clamp(1rem, 1.3vw, 1.2rem); }
   .hero__acts { margin-top: 1.4rem; display: flex; flex-wrap: wrap; gap: 1.2rem 2.2rem; align-items: baseline; font-size: 1.05rem; }
+  /* the dirty title is flecked with dried mud; the clean one is not */
+  .hero__state--a .hero__title {
+    -webkit-mask-image: url(/tex/speckle.png); mask-image: url(/tex/speckle.png);
+    -webkit-mask-size: 56rem auto; mask-size: 56rem auto;
+  }
   .hero__cue { margin-top: 1.4rem; }
   .hero__cue span { display: inline-block; animation: nudge 1.8s var(--ease) infinite; }
   @keyframes nudge { 50% { transform: translateY(5px); } }
