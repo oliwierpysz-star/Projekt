@@ -218,6 +218,7 @@ if (polish && !reduced) {
   const before = $('[data-polish-before]', polish)!, after = $('[data-polish-after]', polish)!;
   const stepsList = $('[data-polish-steps]', polish)!;
   const steps = $$<HTMLElement>('li', stepsList);
+  const cta = $('[data-polish-cta]', polish)!;
   ScrollTrigger.create({
     trigger: polish, start: 'top top', end: 'bottom bottom', scrub: true,
     onUpdate: (s) => {
@@ -225,9 +226,10 @@ if (polish && !reduced) {
       words.forEach((w, i) => w.classList.toggle("is-lit", pp > 0.04 + i * 0.3));
       before.style.opacity = String(pp < 0.86 ? 1 : 0);
       after.style.opacity = String(pp < 0.86 ? 0 : 1);
-      // stages light up with the spreading correction; the rule fills between them
-      steps.forEach((li) => li.classList.toggle('is-on', pp >= Number(li.dataset.at)));
-      stepsList.style.setProperty('--fill', String(Math.min(1, Math.max(0, (pp - 0.12) / 0.7))));
+      // one stage at a time rises into the line as the correction spreads; the price waits for the end
+      const now = steps.reduce((k, li, i) => (pp >= Number(li.dataset.at) ? i : k), -1);
+      steps.forEach((li, i) => { li.classList.toggle('is-now', i === now); li.classList.toggle('is-past', i < now); });
+      cta.classList.toggle('is-on', pp >= 0.86);
     },
   });
   initPolishGL($<HTMLCanvasElement>('[data-polish-gl]', polish)!, () => pp)
@@ -317,6 +319,65 @@ if (track) {
     } else v.pause();
   }), { threshold: 0.25 });
   vids.forEach((v) => vio.observe(v));
+}
+
+/* Studio ("Lśnią po nas."): lights flicker on, the turntable turns, the LED bar wipes one car into the next */
+const studio = $('[data-studio]');
+if (studio && !reduced) {
+  const c = gsap.utils.clamp(0, 1);
+  const stage = $('.studio__stage', studio)!;
+  const tubes = $$<SVGLineElement>('.studio__tubes line', studio);
+  // each tube switches on at its own moment (inner ring first), with a stutter like a real fluorescent tube
+  const maxO = Math.max(...tubes.map((t) => Number(getComputedStyle(t).getPropertyValue('--o')) || 0), 1);
+  const at = tubes.map((t) => (Number(getComputedStyle(t).getPropertyValue('--o')) || 0) / maxO * 0.75 + Math.random() * 0.2);
+  const cars = $$<HTMLElement>('[data-studio-car]', studio);
+  const caps = $$<HTMLElement>('[data-studio-cap]', studio);
+  const bar = $('[data-studio-bar]', studio)!;
+  const n = cars.length;
+  const L0 = 0.2, seg = (0.96 - L0) / n, wipe = 0.07;
+  ScrollTrigger.create({
+    trigger: studio, start: 'top top', end: 'bottom bottom', scrub: true,
+    onUpdate: (st) => {
+      const p = st.progress;
+      const on = c((p - 0.02) / 0.15);
+      stage.style.setProperty('--on', String(on));
+      tubes.forEach((t, i) => {
+        const d = on - at[i];
+        // just past its moment a tube stutters once before it stays on
+        t.classList.toggle('is-on', d > 0.06 || (d > 0 && d < 0.03));
+      });
+      $('.studio__table span', studio)!.style.setProperty('--spin', `${p * 540}deg`);
+      // which car, and how far through its turn
+      const k = Math.min(n - 1, Math.max(0, Math.floor((p - L0) / seg)));
+      const local = c((p - L0 - k * seg) / seg);
+      let barX = -1;
+      cars.forEach((car, i) => {
+        const vis = p >= L0 - 0.02 && (i === k || (i === k + 1 && local > 1 - wipe / seg));
+        car.classList.toggle('is-on', vis);
+        car.style.clipPath = '';
+        if (!vis) return;
+        // several angles: turn through them; one photo: a slow drift as the table turns
+        const frames = $$<HTMLElement>('.studio__frame', car);
+        const f = frames.length > 1 ? Math.min(frames.length - 1, Math.floor((i === k ? local : 0) * frames.length)) : 0;
+        frames.forEach((fr, j) => fr.classList.toggle('is-on', j === f));
+        const drift = i === k ? local : 0;
+        car.style.transform = `translateX(calc(-50% + ${(drift - 0.5) * 3}vw)) scale(${0.96 + drift * 0.06})`;
+      });
+      // the wipe: in the last stretch of a car's turn, the bar crosses the stage and reveals the next car behind it
+      const w = c((local - (1 - wipe / seg)) / (wipe / seg));
+      if (k < n - 1 && w > 0) {
+        barX = w * 112 - 6;
+        const next = cars[k + 1], cur = cars[k];
+        const r = next.getBoundingClientRect(), sw = stage.clientWidth;
+        const cut = Math.min(100, Math.max(0, ((barX / 100) * sw - r.left) / r.width * 100));
+        next.style.clipPath = `inset(-20% ${100 - cut}% -40% 0)`;
+        cur.style.clipPath = `inset(-20% 0 -40% ${cut}%)`;
+      }
+      bar.style.setProperty('--x', `${barX}%`);
+      bar.style.setProperty('--bar-o', barX > -1 ? '1' : '0');
+      caps.forEach((cp, i) => cp.classList.toggle('is-on', p >= L0 - 0.02 && i === (w > 0.5 && k < n - 1 ? k + 1 : k)));
+    },
+  });
 }
 
 /* Darmowa wycena: build the SMS */

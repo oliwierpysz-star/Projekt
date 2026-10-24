@@ -1,0 +1,138 @@
+---
+// "Lśnią po nas." as a dark studio: the screen goes black, the hexagon LED ceiling flickers on,
+// and a car stands centred on a lit turntable in front of the title. Scrolling turns the turntable;
+// the next car arrives behind the same LED-bar wipe the hero uses.
+// A car with several angle cut-outs (src/assets/studio/<id>-1.png, -2.png …) turns through them.
+// The F12 is a reference for the owner (what photos to take), never shown as his work.
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+const cut = import.meta.glob<{ default: ImageMetadata }>('../assets/cutouts/*.png', { eager: true });
+const angles = import.meta.glob<{ default: ImageMetadata }>('../assets/studio/*.png', { eager: true });
+const framesOf = (id: string) => Object.keys(angles).filter((k) => k.includes(`/studio/${id}-`)).sort().map((k) => angles[k].default);
+
+type Car = { id: string; make: string; model: string; what: string; slug?: string; ref?: boolean; frames: ImageMetadata[] };
+const f12 = framesOf('f12');
+const cars: Car[] = [
+  ...(f12.length ? [{ id: 'f12', make: 'Ferrari', model: 'F12', what: '', ref: true, frames: f12 }] : []),
+  { id: 's5', make: 'Audi', model: 'S5', what: 'Detailing lakieru i wnętrza', slug: 'audi-s5', frames: [cut['../assets/cutouts/s5-car.png'].default] },
+  { id: 'a45', make: 'Mercedes', model: 'A45', what: 'Full detail z aplikacją wosku', slug: 'mercedes-a45', frames: [cut['../assets/cutouts/a45-car.png'].default] },
+].slice(0, 2);
+
+// hexagon ceiling: a honeycomb of tubes, drawn once as SVG lines; each tube gets a switch-on order
+const hex: { x1: number; y1: number; x2: number; y2: number; o: number }[] = [];
+{
+  const r = 60, w = Math.sqrt(3) * r, seen = new Set<string>();
+  for (let row = -2; row <= 2; row++) for (let col = -4; col <= 4; col++) {
+    const cx = col * w + (row % 2 ? w / 2 : 0), cy = row * 1.5 * r;
+    if (Math.hypot(cx / 1.6, cy) > 220) continue;
+    for (let k = 0; k < 6; k++) {
+      const a1 = (Math.PI / 3) * k + Math.PI / 6, a2 = a1 + Math.PI / 3;
+      const p = [cx + r * Math.cos(a1), cy + r * Math.sin(a1), cx + r * Math.cos(a2), cy + r * Math.sin(a2)].map((v) => Math.round(v));
+      const key = [p.slice(0, 2).join(), p.slice(2).join()].sort().join('|');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      hex.push({ x1: p[0], y1: p[1], x2: p[2], y2: p[3], o: Math.round(Math.hypot(cx, cy) / 40) });
+    }
+  }
+}
+---
+<section class="studio" id="realizacje" data-studio>
+  <div class="studio__stage">
+    <!-- hexagon LED ceiling, seen from below -->
+    <div class="studio__rig" aria-hidden="true">
+      <svg viewBox="-460 -260 920 520">
+        <g class="studio__tubes" id="studio-hex">
+          {hex.map((t) => <line x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} style={`--o:${t.o}`} />)}
+        </g>
+      </svg>
+    </div>
+    <div class="studio__rig studio__rig--floor" aria-hidden="true">
+      <svg viewBox="-460 -260 920 520"><use href="#studio-hex" /></svg>
+    </div>
+    <div class="studio__glow" aria-hidden="true"></div>
+    <div class="studio__floor" aria-hidden="true"></div>
+
+    <h2 class="display studio__title" data-studio-title>Lśnią <em>po nas.</em></h2>
+
+    <div class="studio__table" aria-hidden="true"><span></span></div>
+
+    {cars.map((c, i) => (
+      <div class="studio__car" data-studio-car={i}>
+        {c.frames.map((f, k) => (
+          <Image class="studio__frame" data-frame={k} src={f} alt={k === 0 ? `${c.make} ${c.model}` : ''} widths={[640, 1000, 1500]} sizes="(max-width: 760px) 92vw, 62vw" loading="lazy" />
+        ))}
+      </div>
+    ))}
+    {cars.map((c, i) => (
+      <div class="studio__cap" data-studio-cap={i}>
+        <b>{c.make} <em>{c.model}</em></b>
+        {c.ref ? (
+          <span class="studio__ref">Przykład dla właściciela: takie ujęcia (przód, bok, tył) wystarczą, żeby każda realizacja tak wyglądała. Zdjęcia referencyjne, nie nasza praca.</span>
+        ) : (
+          <span>{c.what}</span>
+        )}
+        {c.slug && <button class="act" type="button" data-case-open={c.slug}>Zobacz z bliska <span class="arr" aria-hidden="true">→</span></button>}
+      </div>
+    ))}
+    <span class="studio__bar" aria-hidden="true" data-studio-bar></span>
+    <div class="studio__black" aria-hidden="true" data-studio-black></div>
+  </div>
+</section>
+
+<style>
+  .studio { position: relative; height: 420svh; }
+  .studio__stage {
+    position: sticky; top: 0; height: 100svh; overflow: hidden;
+    background: radial-gradient(70% 55% at 50% 0%, #121823, #07090c 70%);
+    --on: 0; /* 0..1 lights switching on (set from scroll) */
+  }
+  /* the ceiling, tilted away so it reads as a light rig above us */
+  .studio__rig { position: absolute; left: 50%; top: -6svh; width: min(170vw, 270svh); transform: translateX(-50%) perspective(70svh) rotateX(-56deg); transform-origin: 50% 0; }
+  /* the same ceiling, faintly mirrored in the polished floor */
+  .studio__rig--floor { top: auto; bottom: -6svh; transform: translateX(-50%) perspective(70svh) rotateX(56deg); transform-origin: 50% 100%; opacity: calc(var(--on) * 0.16); -webkit-mask-image: linear-gradient(0deg, transparent, #000 70%); mask-image: linear-gradient(0deg, transparent, #000 70%); }
+  .studio__rig--floor line { filter: none !important; }
+  .studio__rig svg { display: block; width: 100%; overflow: visible; }
+  .studio__tubes line { stroke: #fff; stroke-width: 3.2; stroke-linecap: round; opacity: 0.06; transition: opacity 0.12s; }
+  .studio__tubes line.is-on { opacity: 1; filter: drop-shadow(0 0 5px rgba(190, 215, 255, 0.85)); }
+  .studio__glow { position: absolute; inset: 0; pointer-events: none; opacity: var(--on); background: radial-gradient(55% 45% at 50% 4%, rgba(200, 220, 255, 0.22), transparent 70%), radial-gradient(40% 18% at 50% 74%, rgba(200, 220, 255, 0.12), transparent 70%); }
+  .studio__floor { position: absolute; left: 0; right: 0; bottom: 0; height: 36%; background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.025) 30%, rgba(0, 0, 0, 0.5)); }
+
+  .studio__title { position: absolute; left: 0; right: 0; top: 15svh; text-align: center; font-size: clamp(3rem, 13vw, 15rem); line-height: 0.85; z-index: 1; opacity: calc(0.2 + var(--on) * 0.8); }
+  .studio__title em { display: block; }
+
+  /* turntable: a lit ring on the floor, its dashes turning with the scroll */
+  .studio__table { position: absolute; left: 50%; bottom: 13svh; width: min(70vw, 110svh); aspect-ratio: 5 / 1; transform: translateX(-50%); z-index: 2; opacity: var(--on); }
+  .studio__table span { position: absolute; inset: 0; border-radius: 50%; border: 2px dashed rgba(91, 140, 255, 0.55); box-shadow: 0 0 40px rgba(91, 140, 255, 0.25), inset 0 0 60px rgba(91, 140, 255, 0.12); transform: rotate(var(--spin, 0deg)); }
+
+  .studio__car { position: absolute; left: 50%; bottom: 13svh; width: min(52vw, 84svh); aspect-ratio: 16 / 9; transform: translateX(-50%); z-index: 3; visibility: hidden; }
+  .studio__car.is-on { visibility: visible; }
+  .studio__frame { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; opacity: 0; transition: opacity 0.35s; filter: drop-shadow(0 26px 22px rgba(0, 0, 0, 0.75)); -webkit-box-reflect: below -2px linear-gradient(transparent 72%, rgba(255, 255, 255, 0.16)); }
+  .studio__frame.is-on { opacity: 1; }
+
+  .studio__cap { position: absolute; left: var(--gutter); bottom: 5svh; z-index: 4; display: grid; gap: 0.4rem; justify-items: start; max-width: 30rem; opacity: 0; transform: translateY(12px); transition: opacity 0.5s, transform 0.6s var(--ease); pointer-events: none; }
+  .studio__cap.is-on { opacity: 1; transform: none; pointer-events: auto; }
+  .studio__cap b { font-family: 'Knewave', sans-serif; text-transform: uppercase; font-weight: 400; font-size: clamp(1.8rem, 3vw, 3rem); line-height: 0.9; transform: rotate(-3deg); transform-origin: 0 100%; }
+  .studio__cap b em { font-style: normal; color: var(--accent); font-size: 0.55em; }
+  .studio__cap span { color: var(--mute); font-size: 0.95rem; }
+  .studio__ref { border-left: 2px solid var(--accent); padding-left: 0.8rem; color: var(--ink) !important; }
+
+  /* the LED bar that wipes one car into the next */
+  .studio__bar { position: absolute; top: 0; bottom: 0; left: var(--x, -10%); width: 3px; z-index: 5; background: #f4f8ff; box-shadow: 0 0 22px 6px rgba(190, 210, 255, 0.6), 0 0 80px 20px rgba(91, 140, 255, 0.3); opacity: var(--bar-o, 0); pointer-events: none; }
+  .studio__black { position: absolute; inset: 0; z-index: 6; background: #000; pointer-events: none; opacity: var(--black, 0); }
+
+  @media (max-width: 760px) {
+    .studio { height: 320svh; }
+    .studio__title { top: 15svh; font-size: clamp(2.6rem, 15vw, 4rem); }
+    .studio__car { width: 94vw; bottom: 24svh; }
+    .studio__table { width: 92vw; bottom: 22svh; }
+    .studio__cap { bottom: 4svh; right: var(--gutter); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .studio { height: auto; }
+    .studio__stage { position: relative; --on: 1; }
+    .studio__tubes line { opacity: 1; }
+    .studio__car:first-of-type { visibility: visible; }
+    .studio__car:first-of-type .studio__frame:first-child, .studio__cap:first-of-type { opacity: 1; transform: none; }
+  }
+</style>

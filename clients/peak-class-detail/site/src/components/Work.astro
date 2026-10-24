@@ -31,11 +31,11 @@ const nameSize = (s: string) => Math.min(20, 48 / (s.length * 0.52));
 // paint drips under the name, placed from the letters so each poster differs but stays the same between builds
 const drips = (s: string) => [...s].slice(0, 3).map((ch, i) => ({ x: 12 + ((ch.charCodeAt(0) * 37 + i * 29) % 70), h: 5 + ((ch.charCodeAt(0) * 13 + i * 7) % 9) }));
 ---
-<section class="work" id="realizacje">
+<section class="work" id="lista">
   <div class="wrap work__head">
     <h2 class="display h2 rise">
-      <span class="ln"><span>Lśnią</span></span>
-      <span class="ln"><span>po <em>nas.</em></span></span>
+      <span class="ln"><span>Prosto z</span></span>
+      <span class="ln"><span><em>podjazdu.</em></span></span>
     </h2>
     <div class="work__side">
       <p class="lead rise-fade">Prawdziwe auta naszych klientów, prosto z ich podjazdów. Kliknij auto, żeby zobaczyć je z bliska.</p>
