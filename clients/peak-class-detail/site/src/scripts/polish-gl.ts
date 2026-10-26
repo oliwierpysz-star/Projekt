@@ -83,11 +83,15 @@ export async function initPolishGL(canvas: HTMLCanvasElement, getProgress: () =>
   const uCover = U('uCover'), uAspect = U('uAspect'), uProg = U('uProg');
   const imgAspect = before.width / before.height;
 
+  const coarse = matchMedia('(pointer: coarse)').matches;
+  let cw = 0, ch = 0, last = -1;
   const resize = () => {
-    const dpr = Math.min(devicePixelRatio || 1, 1.5);
+    const dpr = Math.min(devicePixelRatio || 1, coarse ? 1 : 1.5);
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
+    if (Math.round(w * dpr) === cw && Math.round(h * dpr) === ch) return;
+    canvas.width = cw = Math.round(w * dpr);
+    canvas.height = ch = Math.round(h * dpr);
+    last = -1;
     gl.viewport(0, 0, canvas.width, canvas.height);
     const a = w / h;
     gl.uniform2f(uCover, a > imgAspect ? 1 : a / imgAspect, a > imgAspect ? imgAspect / a : 1);
@@ -100,8 +104,8 @@ export async function initPolishGL(canvas: HTMLCanvasElement, getProgress: () =>
   const frame = () => {
     raf = 0;
     if (!visible) return;
-    gl.uniform1f(uProg, getProgress());
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    const pr = getProgress();
+    if (pr !== last) { last = pr; gl.uniform1f(uProg, pr); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); }
     raf = requestAnimationFrame(frame);
   };
   new IntersectionObserver(([e]) => {

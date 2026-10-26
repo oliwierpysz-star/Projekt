@@ -79,7 +79,11 @@ export function initBg(canvas: HTMLCanvasElement, covered: () => boolean = () =>
 
   const coarse = matchMedia('(pointer: coarse)').matches;
   const scale = coarse ? 0.35 : 0.5; // small buffer, stretched: soft like a real reflection, cheap to draw
+  // phones: ignore the address bar showing/hiding (height-only changes), rebuild only on real resizes
+  let lw = 0, lh = 0;
   const resize = () => {
+    if (coarse && innerWidth === lw && Math.abs(innerHeight - lh) < 160) return;
+    lw = innerWidth; lh = innerHeight;
     canvas.width = Math.max(2, Math.round(innerWidth * scale));
     canvas.height = Math.max(2, Math.round(innerHeight * scale));
     gl.viewport(0, 0, canvas.width, canvas.height);

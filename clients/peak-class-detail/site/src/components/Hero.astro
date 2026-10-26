@@ -89,9 +89,11 @@ const masks = readdirSync('public/hero').filter((v) => existsSync(`public/hero/$
   .hero__lead { margin-top: 1.4rem; max-width: 40ch; color: var(--mute); font-size: clamp(1rem, 1.3vw, 1.2rem); }
   .hero__acts { margin-top: 1.4rem; display: flex; flex-wrap: wrap; gap: 1.2rem 2.2rem; align-items: baseline; font-size: 1.05rem; }
   /* the dirty title is flecked with dried mud; the clean one is not */
-  .hero__state--a .hero__title {
+  /* the mask sits on each line, the element that moves, so it is drawn once and just slides */
+  .hero__state--a .hero__title .ln > span {
     -webkit-mask-image: url(/tex/speckle.png); mask-image: url(/tex/speckle.png);
     -webkit-mask-size: 56rem auto; mask-size: 56rem auto;
+    will-change: transform;
   }
   .hero__cue { margin-top: 1.4rem; }
   .hero__cue span { display: inline-block; animation: nudge 1.8s var(--ease) infinite; }

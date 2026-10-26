@@ -7,6 +7,8 @@ import { initCases } from './cases';
 import { initBg } from './bgfx';
 
 gsap.registerPlugin(ScrollTrigger);
+// phones: the address bar showing/hiding is not a real resize, don't recalculate every trigger for it
+ScrollTrigger.config({ ignoreMobileResize: true });
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = <T extends Element = HTMLElement>(s: string, r: ParentNode = document) => r.querySelector<T>(s);
 const $$ = <T extends Element = HTMLElement>(s: string, r: ParentNode = document) => [...r.querySelectorAll<T>(s)];
@@ -117,8 +119,10 @@ if (!reduced) {
   const shots = $$<HTMLElement>('[data-shot]', route);
   const len = routePath.getTotalLength();
   // place the stops on the curve (the svg stretches, so map viewBox units to pixels)
+  let svgLeft = 0, svgW = 1; // the svg's offset and width inside the map, measured once per resize
   const placeStops = () => {
     const b = routeSvg.getBoundingClientRect(), m = routeSvg.parentElement!.getBoundingClientRect();
+    svgLeft = b.left - m.left; svgW = b.width;
     const at = (t: number) => {
       const pt = routePath.getPointAtLength(t * len);
       return { x: b.left - m.left + (pt.x / 1000) * b.width, y: b.top - m.top + (pt.y / 200) * b.height };
@@ -127,7 +131,8 @@ if (!reduced) {
     return at;
   };
   let at = placeStops();
-  addEventListener('resize', () => { at = placeStops(); });
+  let rw = innerWidth;
+  addEventListener('resize', () => { if (innerWidth !== rw) { rw = innerWidth; at = placeStops(); } });
 
   ScrollTrigger.create({
     trigger: hero, start: 'top top', end: 'bottom bottom', scrub: true,
@@ -137,8 +142,7 @@ if (!reduced) {
       const r = c((p - 0.52) / 0.38);
       const pt = at(r);
       // the blue line is revealed up to the light (the route only moves rightwards)
-      const sb = routeSvg.getBoundingClientRect(), mb = routeSvg.parentElement!.getBoundingClientRect();
-      routeDraw.style.clipPath = `inset(-30px ${Math.max(0, 100 - ((pt.x - (sb.left - mb.left)) / sb.width) * 100)}% -30px 0)`;
+      routeDraw.style.clipPath = `inset(-30px ${Math.max(0, 100 - ((pt.x - svgLeft) / svgW) * 100)}% -30px 0)`;
       routeLight.style.transform = `translate(${pt.x}px, ${pt.y}px)`;
       routeLight.style.opacity = p > 0.5 && p < 0.995 ? '1' : '0';
       stops.forEach((st, i) => {

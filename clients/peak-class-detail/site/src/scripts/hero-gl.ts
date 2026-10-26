@@ -77,16 +77,16 @@ function loadImage(src: string) {
 }
 
 export async function initHeroGL(canvas: HTMLCanvasElement, getState: () => { wash: number }, variant: string, front?: HTMLCanvasElement) {
-  // preserveDrawingBuffer lets the cut-out layer copy this frame after it is drawn
-  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: !!front });
-  if (!gl) return null;
   const portrait = matchMedia('(orientation: portrait)').matches;
   const set = portrait ? 'phone' : 'desktop';
+  const wantsFront = !!front && set === 'desktop' && (canvas.closest<HTMLElement>('[data-hero]')?.dataset.masks || '').split(',').includes(variant);
+  // preserveDrawingBuffer (needed only for the car-in-front layer, desktop) lets that layer copy the frame
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance', preserveDrawingBuffer: wantsFront });
+  if (!gl) return null;
   const clean = await loadImage(`/hero/${variant}/clean-${set}.webp`);
   const dirty = await loadImage(`/hero/${variant}/dirty-${set}.webp`).catch(() => null);
   // optional cut-out mask: the car is redrawn above the title
-  const hasMask = (canvas.closest<HTMLElement>('[data-hero]')?.dataset.masks || '').split(',').includes(variant);
-  const mask = front && hasMask && set === 'desktop' ? await loadImage(`/hero/${variant}/mask-desktop.png`).catch(() => null) : null;
+  const mask = wantsFront ? await loadImage(`/hero/${variant}/mask-desktop.png`).catch(() => null) : null;
   const fctx = mask ? front!.getContext('2d') : null;
   if (fctx) front!.closest('.hero')?.classList.add('has-front');
 
@@ -124,11 +124,17 @@ export async function initHeroGL(canvas: HTMLCanvasElement, getState: () => { wa
   const uAspect = gl.getUniformLocation(prog, 'uAspect');
   const imgAspect = clean.width / clean.height;
 
+  // phones draw at 1x (the image is soft at the wipe anyway); sizes only change when the canvas really does,
+  // so the address bar showing/hiding doesn't rebuild the buffer mid-scroll
+  const coarse = matchMedia('(pointer: coarse)').matches;
+  let cw = 0, ch = 0, drawn = -1;
   const resize = () => {
-    const dpr = Math.min(devicePixelRatio || 1, 1.5);
+    const dpr = Math.min(devicePixelRatio || 1, coarse ? 1 : 1.5);
     const w = canvas.clientWidth, h = canvas.clientHeight;
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
+    if (Math.round(w * dpr) === cw && Math.round(h * dpr) === ch) return;
+    canvas.width = cw = Math.round(w * dpr);
+    canvas.height = ch = Math.round(h * dpr);
+    drawn = -1;
     gl.viewport(0, 0, canvas.width, canvas.height);
     const a = w / h;
     // cover: scale uv so the image fills the canvas
@@ -146,6 +152,10 @@ export async function initHeroGL(canvas: HTMLCanvasElement, getState: () => { wa
     if (!visible) return;
     // bar travels from just off the left edge to just off the right edge
     const st = getState();
+    // before and after the wash the picture is still: draw it once and rest (the bar only lives mid-wash)
+    const idle = st.wash <= 0.001 || st.wash >= 0.999;
+    if (idle && drawn === st.wash && !fctx) { raf = requestAnimationFrame(frame); return; }
+    drawn = idle ? st.wash : -1;
     gl.uniform1f(uBar, -0.04 + st.wash * 1.08);
     gl.uniform1f(uTime, (performance.now() - t0) / 1000);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
