@@ -12,6 +12,11 @@ const masks = readdirSync('public/hero').filter((v) => existsSync(`public/hero/$
       <img src="/hero/a/clean-desktop.webp" alt="" width="2560" height="1440" fetchpriority="high" decoding="async" />
     </picture>
     <canvas class="hero__gl" data-hero-gl aria-hidden="true"></canvas>
+    <!-- phones: the wash as a transform-only wipe (dirty photo over the clean one, both slide; the bar rides the edge) -->
+    <div class="hero__wipe" data-hero-wipe aria-hidden="true" hidden>
+      <div class="hero__wipe-in"><img alt="" decoding="async" data-hero-dirty /></div>
+      <span class="hero__wipe-bar"></span>
+    </div>
     <div class="hero__shade" aria-hidden="true"></div>
 
     <div class="hero__copy wrap">
@@ -76,6 +81,15 @@ const masks = readdirSync('public/hero').filter((v) => existsSync(`public/hero/$
       linear-gradient(0deg, var(--bg) 0%, rgba(6, 8, 11, 0.5) 16%, transparent 34%);
   }
   .hero.is-gl .hero__gl { opacity: 1; }
+  .hero__wipe { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+  .hero__wipe[hidden] { display: none; }
+  .hero__wipe-in { position: absolute; inset: 0; overflow: hidden; transform: translate3d(0, 0, 0); will-change: transform; }
+  .hero__wipe-in img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: translate3d(0, 0, 0); will-change: transform; }
+  .hero__wipe-bar {
+    position: absolute; top: -5%; bottom: -5%; left: 0; width: 3px; margin-left: -1px;
+    background: #f4f8ff; box-shadow: 0 0 18px 5px rgba(210, 225, 255, 0.75), 0 0 60px 18px rgba(140, 175, 255, 0.35);
+    transform: translate3d(-10vw, 0, 0); will-change: transform;
+  }
   .hero__shade {
     position: absolute; inset: 0; pointer-events: none;
     background:

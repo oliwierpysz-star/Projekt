@@ -86,6 +86,8 @@ const hero = $('[data-hero]')!;
 const heroA = $('[data-hero-a]')!;
 const heroB = $('[data-hero-b]')!;
 const heroState = { wash: 0 };
+// touch screens get the transform-only wash (WebGL updates stutter there while you swipe)
+const touchWipe = matchMedia('(pointer: coarse)').matches;
 // Hero variants for the client to choose from: ?hero=a…f (the choice is remembered on this device)
 const params = new URLSearchParams(location.search);
 const VARIANTS = ['a', 'b', 'c', 'd', 'e', 'f'];
@@ -154,7 +156,7 @@ if (!reduced) {
       cta.classList.toggle('is-on', r >= 0.98);
     },
   });
-  const media = $$('.hero__still, .hero__gl, .hero__front, .hero__shade, .hero__copy', hero);
+  const media = $$('.hero__still, .hero__gl, .hero__wipe, .hero__front, .hero__shade, .hero__copy', hero);
   const tl = gsap.timeline({ scrollTrigger: { trigger: hero, start: 'top top', end: 'bottom bottom', scrub: 0.6 } });
   tl.to($$('.ln > span', heroA), { yPercent: -110, stagger: 0.02, duration: 0.06, ease: 'none' }, 0.1)
     .to($('[data-hero-cue]'), { opacity: 0, duration: 0.03 }, 0.02)
@@ -167,7 +169,28 @@ if (!reduced) {
     .to({}, { duration: 0.01 }, 0.99);
   // intro: first title rises on load
   gsap.from($$('.ln > span', heroA), { yPercent: 110, stagger: 0.08, duration: 1.1, ease: 'expo.out', delay: 0.15 });
-  initHeroGL($<HTMLCanvasElement>('[data-hero-gl]')!, () => heroState, variant, $<HTMLCanvasElement>('[data-hero-front]')!)
+  if (touchWipe) {
+    // phones: the wash moves only transforms, so the compositor keeps it smooth both ways
+    const wipe = $('[data-hero-wipe]', hero)!, inner = $('.hero__wipe-in', wipe)!;
+    const dirty = $<HTMLImageElement>('[data-hero-dirty]', wipe)!, bar = $('.hero__wipe-bar', wipe)!;
+    const set = matchMedia('(orientation: portrait)').matches ? 'phone' : 'desktop';
+    dirty.src = `/hero/${variant}/dirty-${set}.webp`;
+    wipe.hidden = false;
+    let lw = -1;
+    const draw = () => {
+      const w = heroState.wash;
+      if (w !== lw) {
+        lw = w;
+        const x = w * 100;
+        inner.style.transform = `translate3d(${x}%, 0, 0)`;
+        dirty.style.transform = `translate3d(${-x}%, 0, 0)`;
+        bar.style.transform = `translate3d(${(w * 1.04 - 0.02) * innerWidth}px, 0, 0)`;
+        bar.style.opacity = w > 0.001 && w < 0.999 ? '1' : '0';
+      }
+      requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+  } else initHeroGL($<HTMLCanvasElement>('[data-hero-gl]')!, () => heroState, variant, $<HTMLCanvasElement>('[data-hero-front]')!)
     .then((ok) => { if (ok) hero.classList.add('is-gl'); })
     .catch(() => {});
 }
